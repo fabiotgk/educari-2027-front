@@ -1,0 +1,21 @@
+# Aider rules — educari-2027-front
+
+Before any edit, read AGENTS.md at repo root in full. It is the
+single source of truth.
+
+The backend repository is at https://github.com/fabiotgk/educari-2027-infra
+— its AGENTS.md is the primary reference for conventions.
+
+```bash
+aider --read AGENTS.md
+```
+
+## Non-negotiables
+
+- Commits in PT-BR with `Co-Authored-By: Ailiv <naoresponda@ailiv.com.br>`
+- Multi-tenancy aware: use `useTenant()`; check feature flags
+- No hard-coded tenant logic; no `any` in TypeScript
+- Server Components by default; `'use client'` only when needed
+- Conventional Commits
+
+→ Read AGENTS.md now.

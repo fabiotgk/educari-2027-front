@@ -1,0 +1,153 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-and-build:
+    name: Lint + Typecheck + Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prettier (format check)
+        run: pnpm format:check
+
+      - name: ESLint
+        run: pnpm lint
+
+      - name: TypeScript (typecheck)
+        run: pnpm typecheck
+
+      - name: Build (next build)
+        run: pnpm build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+
+  test:
+    name: Tests (Vitest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Vitest
+        run: pnpm test
+
+  security:
+    name: Security (gitleaks + pnpm audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies (audit)
+        run: pnpm install --frozen-lockfile
+
+      - name: pnpm audit (only production)
+        run: pnpm audit --prod --audit-level moderate
+        continue-on-error: true
+
+      - name: Gitleaks (secret scan)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  commit-checks:
+    name: Commit conventions
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verificar Co-Author Ailiv nos commits do PR
+        if: github.event_name == 'pull_request'
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          MISSING=$(git log --format='%H %B' "$BASE_SHA..$HEAD_SHA" | \
+            awk 'BEGIN { ok=1; sha="" } /^[a-f0-9]{40}/ { if (sha != "" && ok==0) print sha; sha=$1; ok=0 } /^Co-Authored-By: Ailiv <naoresponda@ailiv\.com\.br>/ { ok=1 } END { if (sha != "" && ok==0) print sha }')
+          if [ -n "$MISSING" ]; then
+            echo "ERRO: Os seguintes commits NÃO têm Co-Authored-By: Ailiv:"
+            echo "$MISSING"
+            exit 1
+          fi
+          echo "✓ Todos os commits têm Co-Author Ailiv"
+
+      - name: Validar Conventional Commit no título do PR
+        if: github.event_name == 'pull_request'
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            style
+            revert
+          subjectPattern: '^[a-zà-ú].+$'
+          subjectPatternError: |
+            O título do PR deve começar com letra minúscula em PT-BR (sem ponto final).
+          validateSingleCommit: false

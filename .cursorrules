@@ -1,0 +1,34 @@
+You are contributing to the Educari frontend (educari-2027-front).
+
+**Before any action, read AGENTS.md in the repo root.** It is the single source of truth.
+
+The backend (Laravel API) lives in a separate repository:
+https://github.com/fabiotgk/educari-2027-infra
+
+The AGENTS.md of the backend is the **primary** source of conventions
+(commit style, multi-tenancy rules, language rules, etc.).
+
+## Stack
+- Next.js 16 (App Router, Turbopack) + React 19 + TypeScript 5
+- Tailwind CSS 4 + shadcn/ui (copied components, not a dependency)
+- TanStack Query v5 + Zustand
+- next-auth v5 (OAuth client → Laravel Passport)
+- framer-motion (sparingly)
+- React Hook Form + Zod
+- Vitest + Testing Library
+
+## Key rules
+
+1. PT-BR everywhere for human-facing text (commits, PRs, UI, errors).
+   English in technical identifiers (components, hooks, files).
+2. Co-Author commits with: `Co-Authored-By: Ailiv <naoresponda@ailiv.com.br>`
+   — never Claude/GPT/Cursor/Cline/Llama/Kimi.
+3. Multi-tenancy aware: every data-consuming component uses
+   `useTenant()` hook. Check `hasFeature()` before rendering modules.
+4. No hard-coded tenant logic (`if (slug === 'mariana')`) — use
+   feature flags + theme + glossary.
+5. Server Components by default. `'use client'` only when necessary.
+6. TypeScript strict. No `any`. Use `unknown` + narrowing.
+7. shadcn/ui copy-paste, not modify in place without documenting.
+
+→ Open AGENTS.md now.

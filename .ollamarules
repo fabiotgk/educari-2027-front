@@ -1,0 +1,15 @@
+# Regras Ollama / LLMs Locais — educari-2027-front
+
+Leia `AGENTS.md` na raiz deste repositório AGORA antes de qualquer ação.
+
+## Resumo ultracurto
+
+1. Stack: Next.js 16 + React 19 + TypeScript + Tailwind 4 + shadcn/ui
+2. PT-BR em UI/commits; inglês em código
+3. Commit: `Co-Authored-By: Ailiv <naoresponda@ailiv.com.br>` — sempre
+4. Multi-tenant: `useTenant()` em todo componente que consome dados
+5. Backend em https://github.com/fabiotgk/educari-2027-infra
+6. TypeScript strict; sem `any`
+7. Server Components por default
+
+→ Abra AGENTS.md e leia inteiro.
