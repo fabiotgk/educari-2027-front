@@ -4,7 +4,19 @@ import { Bell, ChevronDown, HelpCircle, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTenant } from '@/lib/providers/tenant-provider';
 import { MOCK_TENANTS } from '@/data/mock';
-import { useDemoSession, clearDemoRole } from '@/lib/use-demo-session';
+import { useAuth, logout } from '@/lib/auth';
+
+const ROLE_LABELS: Record<string, string> = {
+  'tenant.super_admin': 'Administrador da Rede',
+  'tenant.secretary': 'Secretário Municipal',
+  'school.principal': 'Diretor Escolar',
+  'school.vice_principal': 'Vice-Diretor',
+  'school.pedagogical_coordinator': 'Coordenador Pedagógico',
+  'school.secretary': 'Secretário Escolar',
+  'school.teacher': 'Professor',
+  guardian: 'Responsável',
+  student: 'Aluno',
+};
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -25,11 +37,12 @@ interface TopbarProps {
 export function Topbar({ breadcrumbs }: TopbarProps) {
   const { tenant } = useTenant();
   const router = useRouter();
-  const { persona } = useDemoSession();
+  const { user } = useAuth();
   const currentTenantOption = MOCK_TENANTS.find((t) => t.slug === tenant.slug);
 
-  const displayName = persona?.name ?? 'Visitante';
-  const displayRole = persona?.title ?? 'Demonstração';
+  const displayName = user?.name ?? '—';
+  const primaryRole = user?.roles?.[0];
+  const displayRole = primaryRole ? (ROLE_LABELS[primaryRole] ?? primaryRole) : '';
   const initials = displayName
     .split(' ')
     .map((w) => w[0])
@@ -37,11 +50,8 @@ export function Topbar({ breadcrumbs }: TopbarProps) {
     .join('')
     .toUpperCase();
 
-  function switchPersona() {
-    router.push('/login');
-  }
   function signOut() {
-    clearDemoRole();
+    logout();
     router.replace('/login');
   }
 
@@ -141,16 +151,14 @@ export function Topbar({ breadcrumbs }: TopbarProps) {
         <DropdownMenuContent align="end" className="w-56">
           <DropdownMenuLabel>{displayName}</DropdownMenuLabel>
           <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-            {displayRole}
-            {persona?.context ? ` · ${persona.context}` : ''}
+            {user?.email ?? displayRole}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem>Meu perfil</DropdownMenuItem>
           <DropdownMenuItem>Preferências</DropdownMenuItem>
           <DropdownMenuItem>Dados (LGPD)</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={switchPersona}>Trocar perfil</DropdownMenuItem>
-          <DropdownMenuItem onClick={signOut}>Sair da demonstração</DropdownMenuItem>
+          <DropdownMenuItem onClick={signOut}>Sair</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
