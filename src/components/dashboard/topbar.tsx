@@ -1,8 +1,10 @@
 'use client';
 
 import { Bell, ChevronDown, HelpCircle, Search } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useTenant } from '@/lib/providers/tenant-provider';
 import { MOCK_TENANTS } from '@/data/mock';
+import { useDemoSession, clearDemoRole } from '@/lib/use-demo-session';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -22,7 +24,26 @@ interface TopbarProps {
 
 export function Topbar({ breadcrumbs }: TopbarProps) {
   const { tenant } = useTenant();
+  const router = useRouter();
+  const { persona } = useDemoSession();
   const currentTenantOption = MOCK_TENANTS.find((t) => t.slug === tenant.slug);
+
+  const displayName = persona?.name ?? 'Visitante';
+  const displayRole = persona?.title ?? 'Demonstração';
+  const initials = displayName
+    .split(' ')
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
+  function switchPersona() {
+    router.push('/login');
+  }
+  function signOut() {
+    clearDemoRole();
+    router.replace('/login');
+  }
 
   return (
     <header className="flex h-16 items-center gap-4 border-b bg-background px-6">
@@ -108,26 +129,28 @@ export function Topbar({ breadcrumbs }: TopbarProps) {
           <Button variant="ghost" className="h-9 gap-2 px-2">
             <Avatar className="h-7 w-7">
               <AvatarImage src="" />
-              <AvatarFallback className="text-xs">FT</AvatarFallback>
+              <AvatarFallback className="text-xs">{initials}</AvatarFallback>
             </Avatar>
             <div className="hidden md:flex flex-col items-start leading-tight">
-              <span className="text-xs font-medium">Fábio Teixeira</span>
-              <span className="text-[10px] text-muted-foreground">Admin SME</span>
+              <span className="text-xs font-medium">{displayName}</span>
+              <span className="text-[10px] text-muted-foreground">{displayRole}</span>
             </div>
             <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
-          <DropdownMenuLabel>Fábio Teixeira</DropdownMenuLabel>
+          <DropdownMenuLabel>{displayName}</DropdownMenuLabel>
           <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-            fabio@devnx.com.br
+            {displayRole}
+            {persona?.context ? ` · ${persona.context}` : ''}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem>Meu perfil</DropdownMenuItem>
           <DropdownMenuItem>Preferências</DropdownMenuItem>
           <DropdownMenuItem>Dados (LGPD)</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>Sair</DropdownMenuItem>
+          <DropdownMenuItem onClick={switchPersona}>Trocar perfil</DropdownMenuItem>
+          <DropdownMenuItem onClick={signOut}>Sair da demonstração</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </header>
