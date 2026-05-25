@@ -49,38 +49,42 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  /* Paleta Educari (baseada na identidade Urbana: laranja + teal + charcoal) */
+  --background: hsl(0 0% 97%);
+  --foreground: hsl(220 20% 14%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(220 20% 14%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(220 20% 14%);
+  --primary: hsl(17 100% 57%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(176 24% 59%);
+  --secondary-foreground: hsl(0 0% 100%);
+  --muted: hsl(130 14% 92%);
+  --muted-foreground: hsl(220 10% 46%);
+  --accent: hsl(130 14% 92%);
+  --accent-foreground: hsl(220 20% 14%);
+  --destructive: hsl(0 72% 51%);
+  --success: hsl(101 30% 50%);
+  --border: hsl(220 9% 86%);
+  --input: hsl(220 9% 86%);
+  --ring: hsl(17 100% 57%);
+  --chart-1: hsl(17 100% 57%);
+  --chart-2: hsl(176 24% 59%);
+  --chart-3: hsl(101 30% 65%);
+  --chart-4: hsl(44 100% 62%);
+  --chart-5: hsl(220 20% 14%);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: hsl(220 20% 14%);
+  --sidebar-foreground: hsl(0 0% 92%);
+  --sidebar-primary: hsl(17 100% 57%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(220 18% 20%);
+  --sidebar-accent-foreground: hsl(0 0% 92%);
+  --sidebar-border: hsl(220 16% 22%);
+  --sidebar-ring: hsl(17 100% 57%);
+  --gradient-hero: linear-gradient(160deg, hsl(220 20% 14%) 0%, hsl(220 18% 22%) 50%, hsl(176 24% 30%) 100%);
+  --gradient-brand: linear-gradient(135deg, hsl(17 100% 57%), hsl(17 100% 42%));
 }
 
 .dark {
@@ -127,4 +131,11 @@
   html {
     @apply font-sans;
   }
+}
+/* Gradientes da marca (login hero, banners) */
+.gradient-hero {
+  background-image: var(--gradient-hero);
+}
+.gradient-brand {
+  background-image: var(--gradient-brand);
 }

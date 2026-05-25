@@ -52,7 +52,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen bg-white">
       {/* ───────────── Hero institucional (esquerda) ───────────── */}
       <aside className="relative hidden w-[46%] shrink-0 overflow-hidden lg:flex">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a4ea8] via-[#0b3f86] to-[#062a5c]" />
+        <div className="gradient-hero absolute inset-0" />
 
         <svg className="absolute inset-0 h-full w-full opacity-[0.16]" aria-hidden>
           <defs>
@@ -64,10 +64,10 @@ export default function LoginPage() {
           <rect width="100%" height="100%" fill="url(#net)" />
         </svg>
 
-        <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#FF9900]/20 blur-3xl" />
+        <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-primary/25 blur-3xl" />
 
         <svg
-          className="absolute bottom-0 left-0 w-full text-[#04203f]"
+          className="absolute bottom-0 left-0 w-full text-black/30"
           viewBox="0 0 800 200"
           preserveAspectRatio="none"
           aria-hidden

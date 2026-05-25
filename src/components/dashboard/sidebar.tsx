@@ -34,18 +34,18 @@ export function Sidebar({ className }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'flex h-full w-64 flex-col bg-[#0b2545] text-slate-300',
+        'flex h-full w-64 flex-col bg-sidebar text-sidebar-foreground',
         className,
       )}
     >
       {/* Marca */}
-      <div className="flex h-16 items-center gap-3 border-b border-white/10 px-5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 ring-1 ring-white/15">
+      <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-5">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-accent">
           <Icons.GraduationCap className="h-5 w-5 text-white" />
         </div>
         <div className="flex flex-col">
           <span className="font-semibold leading-tight text-white">Educari</span>
-          <span className="text-xs leading-tight text-slate-400">
+          <span className="text-xs leading-tight text-sidebar-foreground/55">
             {tenant.theme.institutional_short_name ?? 'Gestão Educacional'}
           </span>
         </div>
@@ -58,7 +58,7 @@ export function Sidebar({ className }: SidebarProps) {
 
             {grouped.map(({ group, label, modules }) => (
               <div key={group}>
-                <div className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                <div className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/45">
                   {label}
                 </div>
                 <div className="space-y-0.5">
@@ -78,7 +78,7 @@ export function Sidebar({ className }: SidebarProps) {
             ))}
 
             <div>
-              <div className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+              <div className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/45">
                 Sistema
               </div>
               <SidebarItem href="/configuracoes" label="Configurações" icon="Settings" active={pathname.startsWith('/configuracoes')} enabled />
@@ -87,8 +87,8 @@ export function Sidebar({ className }: SidebarProps) {
         </TooltipProvider>
       </ScrollArea>
 
-      <div className="border-t border-white/10 p-4 text-[10px] leading-relaxed text-slate-500">
-        <p className="font-medium text-slate-300">{tenant.theme.institutional_name}</p>
+      <div className="border-t border-sidebar-border p-4 text-[10px] leading-relaxed text-sidebar-foreground/45">
+        <p className="font-medium text-sidebar-foreground">{tenant.theme.institutional_name}</p>
         <p>
           {tenant.theme.institutional_city} — {tenant.theme.institutional_state}
         </p>
@@ -120,21 +120,21 @@ function SidebarItem({ href, label, code, icon, active, enabled }: SidebarItemPr
       }}
       className={cn(
         'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-        active && 'bg-white/10 font-medium text-white',
-        !active && enabled && 'text-slate-300 hover:bg-white/5 hover:text-white',
-        !enabled && 'cursor-not-allowed text-slate-500/60',
+        active && 'bg-sidebar-accent font-medium text-sidebar-accent-foreground',
+        !active && enabled && 'text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground',
+        !enabled && 'cursor-not-allowed text-sidebar-foreground/35',
       )}
     >
       {active && (
         <motion.span
           layoutId="sidebar-active"
-          className="absolute left-0 h-5 w-1 rounded-r-full bg-amber-400"
+          className="absolute left-0 h-5 w-1 rounded-r-full bg-primary"
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
         />
       )}
       <IconComponent className="h-4 w-4 shrink-0" />
       <span className="flex-1 truncate">{label}</span>
-      {code && <span className="font-mono text-[10px] text-slate-500">{code}</span>}
+      {code && <span className="font-mono text-[10px] text-sidebar-foreground/45">{code}</span>}
     </Link>
   );
 
