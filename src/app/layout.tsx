@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import { ToastContainer } from 'react-toastify';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { TenantProvider } from '@/lib/providers/tenant-provider';
 import { QueryProvider } from '@/lib/providers/query-provider';
 import { MOCK_TENANT } from '@/data/mock';
 import './globals.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const metadata: Metadata = {
   title: {
@@ -42,6 +44,14 @@ export default function RootLayout({
             <TooltipProvider>{children}</TooltipProvider>
           </TenantProvider>
         </QueryProvider>
+        <ToastContainer
+          position="top-right"
+          autoClose={4000}
+          newestOnTop
+          closeOnClick
+          pauseOnHover
+          theme="light"
+        />
       </body>
     </html>
   );
