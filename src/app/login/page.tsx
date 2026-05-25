@@ -10,30 +10,41 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
+  Zap,
 } from 'lucide-react';
 import { login } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
+/** Contas reais (seedadas no backend) para acesso rápido na demonstração. */
+const QUICK_ACCESS: { label: string; email: string }[] = [
+  { label: 'Secretário Municipal', email: 'secretaria@mariana.mg.gov.br' },
+  { label: 'Diretor', email: 'diretor@mariana.mg.gov.br' },
+  { label: 'Coordenador', email: 'coordenacao@mariana.mg.gov.br' },
+  { label: 'Professor', email: 'professor@mariana.mg.gov.br' },
+  { label: 'Responsável', email: 'responsavel@mariana.mg.gov.br' },
+  { label: 'Administrador', email: 'admin@mariana.mg.gov.br' },
+];
+const QUICK_PASSWORD = 'educari123';
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [show, setShow] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<string | null>(null); // null | 'form' | email
   const [error, setError] = useState<string | null>(null);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function doLogin(em: string, pw: string, key: string) {
     setError(null);
-    setLoading(true);
+    setLoading(key);
     try {
-      await login(email.trim(), password);
+      await login(em.trim(), pw);
       router.push('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Falha ao entrar.');
-      setLoading(false);
+      setLoading(null);
     }
   }
 
@@ -43,7 +54,6 @@ export default function LoginPage() {
       <aside className="relative hidden w-[46%] shrink-0 overflow-hidden lg:flex">
         <div className="absolute inset-0 bg-gradient-to-b from-[#0a4ea8] via-[#0b3f86] to-[#062a5c]" />
 
-        {/* malha de rede */}
         <svg className="absolute inset-0 h-full w-full opacity-[0.16]" aria-hidden>
           <defs>
             <pattern id="net" width="56" height="56" patternUnits="userSpaceOnUse">
@@ -56,7 +66,6 @@ export default function LoginPage() {
 
         <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#FF9900]/20 blur-3xl" />
 
-        {/* skyline */}
         <svg
           className="absolute bottom-0 left-0 w-full text-[#04203f]"
           viewBox="0 0 800 200"
@@ -108,16 +117,13 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <p className="text-xs text-white/45">
-            Educari · Sistema de Gestão Educacional
-          </p>
+          <p className="text-xs text-white/45">Educari · Sistema de Gestão Educacional</p>
         </div>
       </aside>
 
-      {/* ───────────── Formulário de acesso (direita) ───────────── */}
+      {/* ───────────── Acesso (direita) ───────────── */}
       <main className="flex flex-1 items-center justify-center px-5 py-10">
         <div className="w-full max-w-sm">
-          {/* marca mobile */}
           <div className="mb-8 flex items-center gap-2 lg:hidden">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <GraduationCap className="h-5 w-5" />
@@ -130,7 +136,13 @@ export default function LoginPage() {
             Entre com as credenciais da sua conta.
           </p>
 
-          <form onSubmit={onSubmit} className="mt-8 space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              doLogin(email, password, 'form');
+            }}
+            className="mt-8 space-y-4"
+          >
             <div className="space-y-1.5">
               <Label htmlFor="email">E-mail</Label>
               <div className="relative">
@@ -186,8 +198,8 @@ export default function LoginPage() {
               </div>
             )}
 
-            <Button type="submit" className="h-11 w-full" disabled={loading}>
-              {loading ? (
+            <Button type="submit" className="h-11 w-full" disabled={loading !== null}>
+              {loading === 'form' ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" /> Entrando…
                 </>
@@ -197,7 +209,38 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <p className="mt-10 text-center text-xs text-muted-foreground/70">
+          {/* ───────────── Acesso rápido ───────────── */}
+          <div className="mt-8">
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-border" />
+              <span className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                <Zap className="h-3 w-3" /> Acesso rápido
+              </span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
+
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {QUICK_ACCESS.map((q) => (
+                <Button
+                  key={q.email}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={loading !== null}
+                  onClick={() => doLogin(q.email, QUICK_PASSWORD, q.email)}
+                  className="h-9 justify-start text-xs font-normal"
+                >
+                  {loading === q.email ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <span className="truncate">{q.label}</span>
+                  )}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <p className="mt-8 text-center text-xs text-muted-foreground/70">
             Educari · Gestão Educacional · Mariana — MG
           </p>
         </div>
