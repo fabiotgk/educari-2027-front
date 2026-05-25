@@ -35,10 +35,10 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className="h-full antialiased"
+      className="h-full overflow-hidden antialiased"
       suppressHydrationWarning
     >
-      <body className="min-h-full font-sans">
+      <body className="h-screen overflow-hidden font-sans">
         <QueryProvider>
           <TenantProvider tenant={tenant}>
             <TooltipProvider>{children}</TooltipProvider>

@@ -283,9 +283,10 @@ export function SchoolFormPage({ schoolId }: { schoolId?: string }) {
             )}
           </div>
 
-          {/* Rodapé de ações */}
-          <div className="sticky bottom-0 border-t bg-background/95 backdrop-blur">
-            <div className="flex items-center justify-end gap-2 px-6 py-3 lg:px-8">
+          {/* Rodapé de ações (fluxo normal — sem sticky, para não criar
+              scroll/lacuna extra) */}
+          <div className="border-t bg-background">
+            <div className="flex items-center justify-end gap-2 px-6 py-4 lg:px-8">
               <Button type="button" variant="outline" asChild>
                 <Link href={backHref}>Cancelar</Link>
               </Button>
