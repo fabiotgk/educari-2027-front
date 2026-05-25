@@ -2,8 +2,15 @@ import { Topbar } from '@/components/dashboard/topbar';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { ActivityFeed } from '@/components/dashboard/activity-feed';
 import { QuickActions } from '@/components/dashboard/quick-actions';
+import { ProgressList } from '@/components/dashboard/charts';
 
-/** Dashboard da ESCOLA — Diretor / Vice / Coordenação / Secretaria escolar. */
+const ATTENDANCE_BY_CLASS = [
+  { label: '5º A', value: 95 },
+  { label: '5º B', value: 92 },
+  { label: '6º A', value: 88 },
+  { label: '7º A', value: 81 },
+];
+
 export default function PrincipalDashboard() {
   return (
     <>
@@ -25,17 +32,15 @@ export default function PrincipalDashboard() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="space-y-6 lg:col-span-2">
+            <div className="lg:col-span-2">
               <QuickActions />
-              <div className="rounded-lg border border-dashed bg-card p-12 text-center text-sm text-muted-foreground">
-                <p className="mb-1 font-medium text-foreground">Desempenho por turma</p>
-                <p>Frequência, notas e ocorrências por turma da unidade.</p>
-              </div>
             </div>
             <div className="lg:col-span-1">
-              <ActivityFeed />
+              <ProgressList title="Frequência por turma" items={ATTENDANCE_BY_CLASS} />
             </div>
           </div>
+
+          <ActivityFeed />
         </div>
       </main>
     </>

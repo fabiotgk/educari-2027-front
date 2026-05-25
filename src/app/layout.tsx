@@ -1,15 +1,9 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { TenantProvider } from '@/lib/providers/tenant-provider';
 import { QueryProvider } from '@/lib/providers/query-provider';
 import { MOCK_TENANT } from '@/data/mock';
 import './globals.css';
-
-const inter = Inter({
-  variable: '--font-inter',
-  subsets: ['latin', 'latin-ext'],
-});
 
 export const metadata: Metadata = {
   title: {
@@ -39,7 +33,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${inter.variable} h-full antialiased`}
+      className="h-full antialiased"
       suppressHydrationWarning
     >
       <body className="min-h-full font-sans">

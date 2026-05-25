@@ -2,10 +2,25 @@ import { Topbar } from '@/components/dashboard/topbar';
 import { MetricCard } from '@/components/dashboard/metric-card';
 import { ActivityFeed } from '@/components/dashboard/activity-feed';
 import { QuickActions } from '@/components/dashboard/quick-actions';
+import { BarChart, ProgressList } from '@/components/dashboard/charts';
 import { MOCK_METRICS } from '@/data/mock';
 import { formatNumber, formatPercent } from '@/lib/format';
 
-/** Dashboard da REDE — Secretário Municipal / Administrador. */
+const ENROLLMENTS_BY_MONTH = [
+  { label: 'Jan', value: 6120 },
+  { label: 'Fev', value: 7010 },
+  { label: 'Mar', value: 7280 },
+  { label: 'Abr', value: 7320 },
+  { label: 'Mai', value: 7482 },
+];
+
+const ATTENDANCE_BY_SCHOOL = [
+  { label: 'E. M. João da Cruz', value: 94 },
+  { label: 'E. M. Pe. Augusto', value: 91 },
+  { label: 'E. M. São José', value: 88 },
+  { label: 'E. M. Santa Rita', value: 79 },
+];
+
 export default function SecretaryDashboard() {
   return (
     <>
@@ -27,12 +42,21 @@ export default function SecretaryDashboard() {
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="space-y-6 lg:col-span-2">
+            <div className="lg:col-span-2">
+              <BarChart
+                title="Matrículas por mês"
+                subtitle="Evolução de matrículas ativas na rede — 2026"
+                data={ENROLLMENTS_BY_MONTH}
+              />
+            </div>
+            <div className="lg:col-span-1">
+              <ProgressList title="Frequência por escola" items={ATTENDANCE_BY_SCHOOL} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
               <QuickActions />
-              <div className="rounded-lg border border-dashed bg-card p-12 text-center text-sm text-muted-foreground">
-                <p className="mb-1 font-medium text-foreground">Tendências da rede</p>
-                <p>Matrícula, frequência e desempenho por escola — gráficos conectam quando a API dos módulos responder.</p>
-              </div>
             </div>
             <div className="lg:col-span-1">
               <ActivityFeed />
