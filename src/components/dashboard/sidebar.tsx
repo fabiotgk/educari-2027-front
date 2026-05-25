@@ -7,7 +7,6 @@ import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useTenant } from '@/lib/providers/tenant-provider';
 import { MODULES, MODULE_GROUPS } from '@/data/modules';
-import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Tooltip,
@@ -24,91 +23,72 @@ export function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname();
   const { hasFeature, tenant } = useTenant();
 
-  // Agrupa módulos por categoria preservando ordem do catálogo
-  const grouped = (Object.keys(MODULE_GROUPS) as Array<keyof typeof MODULE_GROUPS>)
-    .map((group) => ({
+  const grouped = (Object.keys(MODULE_GROUPS) as Array<keyof typeof MODULE_GROUPS>).map(
+    (group) => ({
       group,
       label: MODULE_GROUPS[group],
       modules: MODULES.filter((m) => m.group === group),
-    }));
+    }),
+  );
 
   return (
     <aside
       className={cn(
-        'flex h-full w-72 flex-col border-r bg-card text-card-foreground',
-        className
+        'flex h-full w-64 flex-col bg-[#0b2545] text-slate-300',
+        className,
       )}
     >
-      <div className="flex h-16 items-center gap-3 border-b px-6">
-        <div
-          className="flex h-9 w-9 items-center justify-center rounded-lg text-white"
-          style={{ backgroundColor: 'var(--tenant-primary)' }}
-        >
-          <Icons.GraduationCap className="h-5 w-5" />
+      {/* Marca */}
+      <div className="flex h-16 items-center gap-3 border-b border-white/10 px-5">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 ring-1 ring-white/15">
+          <Icons.GraduationCap className="h-5 w-5 text-white" />
         </div>
         <div className="flex flex-col">
-          <span className="font-semibold leading-tight">Educari</span>
-          <span className="text-xs text-muted-foreground leading-tight">
-            {tenant.theme.institutional_short_name ?? 'SaaS Educacional'}
+          <span className="font-semibold leading-tight text-white">Educari</span>
+          <span className="text-xs leading-tight text-slate-400">
+            {tenant.theme.institutional_short_name ?? 'Gestão Educacional'}
           </span>
         </div>
       </div>
 
       <ScrollArea className="flex-1 px-3 py-4">
         <TooltipProvider delayDuration={100}>
-          <nav className="space-y-6">
-            <SidebarItem
-              href="/"
-              label="Visão Geral"
-              icon="LayoutDashboard"
-              active={pathname === '/'}
-              enabled
-            />
+          <nav className="space-y-5">
+            <SidebarItem href="/" label="Visão Geral" icon="LayoutDashboard" active={pathname === '/'} enabled />
 
             {grouped.map(({ group, label, modules }) => (
               <div key={group}>
-                <div className="px-3 pb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <div className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                   {label}
                 </div>
                 <div className="space-y-0.5">
-                  {modules.map((mod) => {
-                    const enabled = hasFeature(mod.key);
-                    return (
-                      <SidebarItem
-                        key={mod.key}
-                        href={mod.href}
-                        label={mod.label}
-                        code={mod.code}
-                        icon={mod.icon}
-                        active={pathname.startsWith(mod.href) && mod.href !== '/'}
-                        enabled={enabled}
-                      />
-                    );
-                  })}
+                  {modules.map((mod) => (
+                    <SidebarItem
+                      key={mod.key}
+                      href={mod.href}
+                      label={mod.label}
+                      code={mod.code}
+                      icon={mod.icon}
+                      active={pathname.startsWith(mod.href) && mod.href !== '/'}
+                      enabled={hasFeature(mod.key)}
+                    />
+                  ))}
                 </div>
               </div>
             ))}
 
             <div>
-              <div className="px-3 pb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              <div className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                 Sistema
               </div>
-              <SidebarItem
-                href="/configuracoes"
-                label="Configurações"
-                icon="Settings"
-                active={pathname.startsWith('/configuracoes')}
-                enabled
-              />
+              <SidebarItem href="/configuracoes" label="Configurações" icon="Settings" active={pathname.startsWith('/configuracoes')} enabled />
             </div>
           </nav>
         </TooltipProvider>
       </ScrollArea>
 
-      <div className="border-t p-4 text-[10px] leading-relaxed text-muted-foreground">
-        <p className="font-medium text-foreground">
-          {tenant.theme.institutional_name}
-        </p>
+      <div className="border-t border-white/10 p-4 text-[10px] leading-relaxed text-slate-500">
+        <p className="font-medium text-slate-300">{tenant.theme.institutional_name}</p>
         <p>
           {tenant.theme.institutional_city} — {tenant.theme.institutional_state}
         </p>
@@ -128,7 +108,8 @@ interface SidebarItemProps {
 }
 
 function SidebarItem({ href, label, code, icon, active, enabled }: SidebarItemProps) {
-  const IconComponent = (Icons[icon as keyof typeof Icons] as React.ComponentType<{ className?: string }>) ?? Icons.Square;
+  const IconComponent =
+    (Icons[icon as keyof typeof Icons] as React.ComponentType<{ className?: string }>) ?? Icons.Square;
 
   const content = (
     <Link
@@ -138,27 +119,22 @@ function SidebarItem({ href, label, code, icon, active, enabled }: SidebarItemPr
         if (!enabled) e.preventDefault();
       }}
       className={cn(
-        'group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors',
-        active && 'bg-accent text-accent-foreground font-medium',
-        !active && enabled && 'hover:bg-accent/60',
-        !enabled && 'cursor-not-allowed opacity-50'
+        'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
+        active && 'bg-white/10 font-medium text-white',
+        !active && enabled && 'text-slate-300 hover:bg-white/5 hover:text-white',
+        !enabled && 'cursor-not-allowed text-slate-500/60',
       )}
     >
       {active && (
         <motion.span
           layoutId="sidebar-active"
-          className="absolute left-0 h-6 w-1 rounded-r-full"
-          style={{ backgroundColor: 'var(--tenant-primary)' }}
+          className="absolute left-0 h-5 w-1 rounded-r-full bg-amber-400"
           transition={{ type: 'spring', stiffness: 400, damping: 30 }}
         />
       )}
       <IconComponent className="h-4 w-4 shrink-0" />
       <span className="flex-1 truncate">{label}</span>
-      {code && (
-        <span className="text-[10px] font-mono text-muted-foreground">
-          {code}
-        </span>
-      )}
+      {code && <span className="font-mono text-[10px] text-slate-500">{code}</span>}
     </Link>
   );
 
