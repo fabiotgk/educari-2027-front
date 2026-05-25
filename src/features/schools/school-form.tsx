@@ -92,7 +92,7 @@ export function SchoolFormPage({ schoolId }: { schoolId?: string }) {
       />
       <main className="flex-1 overflow-auto bg-muted/30">
         <form onSubmit={onSubmit}>
-          <div className="container mx-auto max-w-4xl space-y-6 p-6 lg:p-8">
+          <div className="space-y-6 p-6 lg:p-8">
             <div className="flex items-center gap-3">
               <Button type="button" variant="ghost" size="icon-sm" asChild>
                 <Link href={backHref} aria-label="Voltar">
@@ -285,7 +285,7 @@ export function SchoolFormPage({ schoolId }: { schoolId?: string }) {
 
           {/* Rodapé de ações */}
           <div className="sticky bottom-0 border-t bg-background/95 backdrop-blur">
-            <div className="container mx-auto flex max-w-4xl items-center justify-end gap-2 px-6 py-3 lg:px-8">
+            <div className="flex items-center justify-end gap-2 px-6 py-3 lg:px-8">
               <Button type="button" variant="outline" asChild>
                 <Link href={backHref}>Cancelar</Link>
               </Button>

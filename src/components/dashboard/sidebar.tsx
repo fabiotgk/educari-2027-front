@@ -51,7 +51,7 @@ export function Sidebar({ className }: SidebarProps) {
         </div>
       </div>
 
-      <ScrollArea className="flex-1 px-3 py-4">
+      <ScrollArea className="min-h-0 flex-1 px-3 py-4">
         <TooltipProvider delayDuration={100}>
           <nav className="space-y-5">
             <SidebarItem href="/" label="Visão Geral" icon="LayoutDashboard" active={pathname === '/'} enabled />

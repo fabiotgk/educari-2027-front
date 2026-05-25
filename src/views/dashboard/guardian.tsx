@@ -15,7 +15,7 @@ export default function GuardianDashboard() {
     <>
       <Topbar breadcrumbs={[{ label: 'Acompanhamento' }]} />
       <main className="flex-1 overflow-auto bg-muted/30">
-        <div className="container mx-auto max-w-5xl space-y-6 p-6 lg:p-8">
+        <div className="space-y-6 p-6 lg:p-8">
           <div className="flex items-center gap-4 rounded-xl border bg-card p-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-base font-semibold text-primary">
               PO

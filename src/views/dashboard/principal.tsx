@@ -16,7 +16,7 @@ export default function PrincipalDashboard() {
     <>
       <Topbar breadcrumbs={[{ label: 'E. M. João da Cruz' }, { label: 'Visão geral' }]} />
       <main className="flex-1 overflow-auto bg-muted/30">
-        <div className="container mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
+        <div className="space-y-6 p-6 lg:p-8">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">E. M. João da Cruz</h1>
             <p className="mt-1 text-sm text-muted-foreground">

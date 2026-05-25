@@ -36,7 +36,12 @@
    detalhe em abas + cards de estatística + seleção múltipla + ações em massa
    + exportar CSV.
 6. **Toast = `react-toastify`** (via `@/lib/toast`). Nunca outra lib.
-7. Valide: `pnpm typecheck` verde **e** teste real no navegador logado como
+7. **Largura total do container.** O conteúdo da página usa **todo o espaço
+   disponível** — o wrapper é `<div className="space-y-6 p-6 lg:p-8">`
+   (só padding). **NÃO** centralize com `container mx-auto max-w-...`. O layout
+   já cuida do viewport: a sidebar tem altura fixa com scroll próprio e só a
+   área de conteúdo (`<main className="flex-1 overflow-auto …">`) rola.
+8. Valide: `pnpm typecheck` verde **e** teste real no navegador logado como
    **Administrador** (`admin@<tenant>` tem todas as permissões).
 
 ---

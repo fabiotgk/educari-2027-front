@@ -14,9 +14,11 @@ export default function AdminLayout({
 }) {
   return (
     <DemoGuard>
-      <div className="flex min-h-screen">
+      {/* Viewport fixo: a sidebar mantém altura total e rola por dentro;
+          só a área de conteúdo (main) rola. */}
+      <div className="flex h-screen overflow-hidden">
         <Sidebar className="hidden lg:flex" />
-        <div className="flex-1 flex flex-col min-w-0">{children}</div>
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">{children}</div>
       </div>
     </DemoGuard>
   );

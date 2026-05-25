@@ -103,7 +103,7 @@ export function SchoolsPage() {
     <>
       <Topbar breadcrumbs={[{ label: 'Cadastros' }, { label: 'Escolas' }]} />
       <main className="flex-1 overflow-auto bg-muted/30">
-        <div className="container mx-auto max-w-7xl space-y-6 p-6 lg:p-8">
+        <div className="space-y-6 p-6 lg:p-8">
           <PageHeader
             title="Escolas"
             description="Unidades escolares da rede municipal"
