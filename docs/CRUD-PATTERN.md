@@ -143,7 +143,9 @@ Rotas (em `src/app/(admin)/<rota>/`):
    `defaultHidden`, `pinned` (ações). Badges de status/enum coloridos.
 5. **`<resource>-form.tsx`** — **página**: `Topbar` + cabeçalho com voltar +
    `Card`s de seção (`Field` + `Input`/`Select`/`MaskedInput` via `Controller`)
-   + rodapé fixo Cancelar/Salvar. Aceita `resourceId?`; se houver, `use<Resource>`
+   + rodapé Cancelar/Salvar em **fluxo normal** (NÃO use `sticky`/`fixed` —
+   gera scrollbar/lacuna extra; deixe-o após o conteúdo, dentro do `main` que
+   rola). Aceita `resourceId?`; se houver, `use<Resource>`
    carrega e `form.reset(toForm(data))`. Submit: `buildPayload` → mutação →
    `toastSuccess` + `router.push` para o detalhe; catch: `applyApiErrors`
    (se nada aplicou, `toastError`).
