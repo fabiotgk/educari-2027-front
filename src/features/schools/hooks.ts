@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   createResource,
   deleteResource,
+  getResource,
   listResource,
   updateResource,
   type ListParams,
@@ -20,6 +21,15 @@ export function useSchools(params: ListParams) {
     queryKey: [...KEY, params],
     queryFn: () => listResource<School>(RESOURCE, params),
     placeholderData: (prev) => prev, // mantém a tabela visível ao paginar/filtrar
+  });
+}
+
+/** Uma escola por id (páginas de detalhe e edição). */
+export function useSchool(id: string) {
+  return useQuery({
+    queryKey: [...KEY, 'detail', id],
+    queryFn: () => getResource<School>(RESOURCE, id),
+    enabled: Boolean(id),
   });
 }
 

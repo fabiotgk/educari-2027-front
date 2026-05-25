@@ -1,6 +1,8 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Plus, Trash2 } from 'lucide-react';
 
 import { Topbar } from '@/components/dashboard/topbar';
@@ -19,18 +21,14 @@ import { CursorPager } from '@/components/crud/cursor-pager';
 import { ConfirmDialog } from '@/components/crud/confirm-dialog';
 import { toastError, toastSuccess } from '@/lib/toast';
 import { buildSchoolColumns } from './columns';
-import { SchoolForm } from './school-form';
-import { SchoolDetail } from './school-detail';
-import {
-  SCHOOL_STATUS_LABELS,
-  SCHOOL_TYPE_LABELS,
-  type School,
-} from './types';
+import { SCHOOL_STATUS_LABELS, SCHOOL_TYPE_LABELS, type School } from './types';
 import { useDeleteSchool, useDeleteSchools, useSchools } from './hooks';
 
 type ConfirmState = { mode: 'single'; school: School } | { mode: 'bulk'; schools: School[] } | null;
 
 export function SchoolsPage() {
+  const router = useRouter();
+
   // Filtros / busca / paginação
   const [searchInput, setSearchInput] = React.useState('');
   const [search, setSearch] = React.useState('');
@@ -40,13 +38,11 @@ export function SchoolsPage() {
   const [cursor, setCursor] = React.useState<string | null>(null);
   const [cursorStack, setCursorStack] = React.useState<(string | null)[]>([]);
 
-  // Debounce da busca
   React.useEffect(() => {
     const t = setTimeout(() => setSearch(searchInput), 350);
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  // Qualquer mudança de filtro reinicia a paginação
   React.useEffect(() => {
     setCursor(null);
     setCursorStack([]);
@@ -65,33 +61,19 @@ export function SchoolsPage() {
   const rows = query.data?.data ?? [];
   const nextCursor = query.data?.meta.next_cursor ?? null;
 
-  // Diálogos
-  const [formOpen, setFormOpen] = React.useState(false);
-  const [editing, setEditing] = React.useState<School | null>(null);
-  const [detailOpen, setDetailOpen] = React.useState(false);
-  const [viewing, setViewing] = React.useState<School | null>(null);
   const [confirm, setConfirm] = React.useState<ConfirmState>(null);
-
   const deleteOne = useDeleteSchool();
   const deleteMany = useDeleteSchools();
   const deleting = deleteOne.isPending || deleteMany.isPending;
 
-  const openNew = () => {
-    setEditing(null);
-    setFormOpen(true);
-  };
-  const openEdit = (s: School) => {
-    setEditing(s);
-    setFormOpen(true);
-  };
-  const openView = (s: School) => {
-    setViewing(s);
-    setDetailOpen(true);
-  };
-
   const columns = React.useMemo(
-    () => buildSchoolColumns({ onView: openView, onEdit: openEdit, onDelete: (s) => setConfirm({ mode: 'single', school: s }) }),
-    [],
+    () =>
+      buildSchoolColumns({
+        onView: (s) => router.push(`/cadastros/${s.id}`),
+        onEdit: (s) => router.push(`/cadastros/${s.id}/editar`),
+        onDelete: (s) => setConfirm({ mode: 'single', school: s }),
+      }),
+    [router],
   );
 
   const runDelete = async () => {
@@ -110,7 +92,6 @@ export function SchoolsPage() {
     }
   };
 
-  // Estatísticas (refletem os registros carregados nesta página)
   const stats: Stat[] = [
     { label: 'Escolas (página)', value: rows.length, icon: 'Building2', accent: 'primary' },
     { label: 'Ativas', value: rows.filter((s) => s.operation_status === 'active').length, icon: 'CircleCheck', accent: 'success' },
@@ -127,8 +108,10 @@ export function SchoolsPage() {
             title="Escolas"
             description="Unidades escolares da rede municipal"
             actions={
-              <Button onClick={openNew}>
-                <Plus /> Nova escola
+              <Button asChild>
+                <Link href="/cadastros/nova">
+                  <Plus /> Nova escola
+                </Link>
               </Button>
             }
           />
@@ -147,7 +130,7 @@ export function SchoolsPage() {
               loading={query.isLoading}
               exportFilename="escolas"
               emptyMessage="Nenhuma escola encontrada com os filtros atuais."
-              onRowClick={openView}
+              onRowClick={(s) => router.push(`/cadastros/${s.id}`)}
               search={{ value: searchInput, onChange: setSearchInput, placeholder: 'Buscar por nome…' }}
               filters={
                 <>
@@ -218,8 +201,6 @@ export function SchoolsPage() {
         </div>
       </main>
 
-      <SchoolForm open={formOpen} onOpenChange={setFormOpen} school={editing} />
-      <SchoolDetail school={viewing} open={detailOpen} onOpenChange={setDetailOpen} onEdit={openEdit} />
       <ConfirmDialog
         open={confirm !== null}
         onOpenChange={(o) => !o && setConfirm(null)}
