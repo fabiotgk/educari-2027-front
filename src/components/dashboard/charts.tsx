@@ -29,7 +29,7 @@ export function BarChart({
         {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
       </CardHeader>
       <CardContent>
-        <div className="flex h-44 items-end gap-2">
+        <div className="flex h-44 items-stretch gap-2">
           {data.map((d) => (
             <div key={d.label} className="flex flex-1 flex-col items-center gap-2">
               <div className="flex w-full flex-1 items-end">
