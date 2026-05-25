@@ -41,7 +41,10 @@
    (só padding). **NÃO** centralize com `container mx-auto max-w-...`. O layout
    já cuida do viewport: a sidebar tem altura fixa com scroll próprio e só a
    área de conteúdo (`<main className="flex-1 overflow-auto …">`) rola.
-8. Valide: `pnpm typecheck` verde **e** teste real no navegador logado como
+8. **Cursor pointer** em tudo que é clicável já é garantido por uma regra
+   global em `globals.css` (Tailwind v4 tira o pointer dos `<button>`). Não
+   precisa adicionar `cursor-pointer` por elemento — só não remova.
+9. Valide: `pnpm typecheck` verde **e** teste real no navegador logado como
    **Administrador** (`admin@<tenant>` tem todas as permissões).
 
 ---

@@ -131,6 +131,23 @@
   html {
     @apply font-sans;
   }
+  /* Tailwind v4 removeu o cursor-pointer padrão dos <button>. Restaura o
+     ponteiro em tudo que é clicável (botões, links, abas, itens de menu,
+     opções de select, checkbox/switch), exceto quando desabilitado. */
+  button:not(:disabled),
+  [role='button']:not(:disabled),
+  [role='menuitem'],
+  [role='menuitemcheckbox'],
+  [role='menuitemradio'],
+  [role='option'],
+  [role='tab'],
+  [role='checkbox']:not(:disabled),
+  [role='switch']:not(:disabled),
+  a[href],
+  summary,
+  label:has(> input:not(:disabled)) {
+    cursor: pointer;
+  }
 }
 /* Gradientes da marca (login hero, banners) */
 .gradient-hero {
