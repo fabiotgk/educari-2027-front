@@ -93,7 +93,15 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'Compliance',
     items: [
       { label: 'EDUCACENSO', icon: 'ShieldCheck', moduleKey: 'M18_educacenso', href: '/educacenso' },
-      { label: 'Monitor de Evasão', icon: 'TrendingDown', moduleKey: 'M19_evasion_monitoring', href: '/evasao' },
+      {
+        label: 'Monitor de Evasão',
+        icon: 'TrendingDown',
+        moduleKey: 'M19_evasion_monitoring',
+        children: [
+          { label: 'Ocorrências', href: '/evasao' },
+          { label: 'Alertas', href: '/evasao/alertas' },
+        ],
+      },
       { label: 'Acesso e Auditoria', icon: 'ShieldAlert', moduleKey: 'M26_access_audit', href: '/auditoria' },
     ],
   },
