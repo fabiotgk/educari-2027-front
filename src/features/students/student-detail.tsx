@@ -27,8 +27,10 @@ import { StudentEssayEvaluationsTab } from './essay-evaluations-tab';
 import { StudentEnrollmentsTab } from './enrollments-tab';
 import { StudentFacialEnrollmentsTab } from './facial-enrollments-tab';
 import { StudentGuardiansTab } from './guardians-tab';
+import { StudentGradesTab } from './grades-tab';
 import { StudentKitSizingTab } from './kit-sizing-tab';
 import { StudentLearningPathsTab } from './learning-paths-tab';
+import { StudentAttendanceTab } from './attendance-tab';
 import { useDeleteStudent, useStudent } from './hooks';
 
 interface ActiveEnrollment {
@@ -214,6 +216,8 @@ export function StudentDetailPage({ id }: { id: string }) {
                 <TabsList>
                   <TabsTrigger value="resumo">Resumo</TabsTrigger>
                   <TabsTrigger value="matriculas">Matrículas escolares</TabsTrigger>
+                  <TabsTrigger value="notas">Notas</TabsTrigger>
+                  <TabsTrigger value="frequencia">Frequência</TabsTrigger>
                   <TabsTrigger value="matriculas-ava">Matrículas AVA</TabsTrigger>
                   <TabsTrigger value="trilhas">Trilhas adaptativas</TabsTrigger>
                   <TabsTrigger value="redacoes">Redações (IA)</TabsTrigger>
@@ -324,6 +328,14 @@ export function StudentDetailPage({ id }: { id: string }) {
 
                 <TabsContent value="matriculas">
                   <StudentEnrollmentsTab studentId={id} />
+                </TabsContent>
+
+                <TabsContent value="notas">
+                  <StudentGradesTab studentId={id} />
+                </TabsContent>
+
+                <TabsContent value="frequencia">
+                  <StudentAttendanceTab studentId={id} />
                 </TabsContent>
 
                 <TabsContent value="matriculas-ava">

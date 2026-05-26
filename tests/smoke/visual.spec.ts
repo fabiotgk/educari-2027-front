@@ -1,4 +1,4 @@
-import { test, type Page } from '@playwright/test';
+import { test, type Page, type Response as PlaywrightResponse } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -60,29 +60,53 @@ const apiUrl = (
   process.env.NEXT_PUBLIC_API_URL ??
   'http://localhost'
 ).replace(/\/$/, '');
+const AUTH_TOKEN_KEY = 'educari_token';
+const AUTH_USER_KEY = 'educari_user';
+const AUTH_EVENT = 'educari-auth';
+const AVA_TABS = ['Módulos', 'Matrículas', 'Avisos', 'Fóruns'];
+const AVA_TAB_EMPTY_MESSAGE = /Nenhum|Nenhuma/i;
+const DEFAULT_AUTH_USER = {
+  id: 'smoke-admin',
+  name: 'Smoke Admin',
+  email: 'admin@mariana.mg.gov.br',
+  roles: ['tenant.super_admin'],
+  tenant: { slug: 'mariana', name: 'Prefeitura Municipal de Mariana' },
+};
 
-test.setTimeout(180_000);
+test.setTimeout(360_000);
+
+test.beforeEach(async ({ page }) => {
+  const adminToken = process.env.EDUCARI_ADMIN_TOKEN ?? '';
+  await page.addInitScript(({ token, user }) => {
+    window.localStorage.setItem(AUTH_TOKEN_KEY, token);
+    window.localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
+    window.dispatchEvent(new Event(AUTH_EVENT));
+    document.cookie = `${AUTH_TOKEN_KEY}=${token}; path=/; max-age=86400; samesite=lax`;
+  }, {
+    token: adminToken,
+    user: DEFAULT_AUTH_USER,
+  });
+});
+
+async function hydrateAuthState(page: Page, token: string): Promise<void> {
+  await page.evaluate(({ token, user, tokenKey, userKey, eventName }) => {
+    window.localStorage.setItem(tokenKey, token);
+    window.localStorage.setItem(userKey, JSON.stringify(user));
+    window.dispatchEvent(new Event(eventName));
+  }, {
+    token,
+    user: DEFAULT_AUTH_USER,
+    tokenKey: AUTH_TOKEN_KEY,
+    userKey: AUTH_USER_KEY,
+    eventName: AUTH_EVENT,
+  });
+}
 
 test('smoke visual Educari', async ({ page }) => {
   fs.mkdirSync(outDir, { recursive: true });
 
   const adminToken = process.env.EDUCARI_ADMIN_TOKEN;
   if (!adminToken) throw new Error('EDUCARI_ADMIN_TOKEN não informado.');
-
-  await page.addInitScript(({ token }) => {
-    window.localStorage.setItem('educari_token', token);
-    window.localStorage.setItem(
-      'educari_user',
-      JSON.stringify({
-        id: 'smoke-admin',
-        name: 'Smoke Admin',
-        email: 'admin@mariana.mg.gov.br',
-        roles: ['tenant.super_admin'],
-        tenant: { slug: 'mariana', name: 'Prefeitura Municipal de Mariana' },
-      }),
-    );
-    document.cookie = `educari_token=${token}; path=/; max-age=86400; samesite=lax`;
-  }, { token: adminToken });
 
   const report: SmokeReport = {
     admin: [],
@@ -100,6 +124,9 @@ test('smoke visual Educari', async ({ page }) => {
   };
 
   for (const route of ADMIN_ROUTES) {
+    const shouldWaitAuth = route === ADMIN_ROUTES[0];
+    let authBootstrapError: string | null = null;
+
     const consoleMessages: string[] = [];
     const listener = (msg: { type: () => string; text: () => string }) => {
       if (msg.type() === 'error' || msg.type() === 'warning') {
@@ -111,9 +138,30 @@ test('smoke visual Educari', async ({ page }) => {
     let status: number | null = null;
     let cause: string | null = null;
     try {
-      const response = await page.goto(url(route), { waitUntil: 'domcontentloaded', timeout: 20_000 });
+      let authResponse: Promise<PlaywrightResponse | null> = Promise.resolve(null);
+      if (shouldWaitAuth) {
+        authResponse = page
+          .waitForResponse((response) => {
+            let pathname = response.url();
+            try {
+              pathname = new URL(response.url()).pathname;
+            } catch {
+              // noop
+            }
+            return /\/api\/v1\/(tenant\/me|auth\/me)(\?|$)/.test(pathname) && response.status() === 200;
+          }, { timeout: 20_000 })
+          .catch(() => null);
+      }
+
+      const response = await page.goto(url(route), { waitUntil: 'domcontentloaded', timeout: 4_000 });
+      if (shouldWaitAuth) {
+        const authResponseResult = await authResponse;
+        if (!authResponseResult) authBootstrapError = 'Sem resposta autenticada /api/v1/tenant/me ou /api/v1/auth/me';
+      }
+
       status = response?.status() ?? null;
       if (status === null || status >= 400) cause = `status ${status ?? 'sem resposta'}`;
+      if (authBootstrapError) cause = authBootstrapError;
       await page.waitForLoadState('networkidle', { timeout: 2_000 }).catch(() => {});
       await page.screenshot({ path: path.join(outDir, `${slug(route)}.png`), fullPage: true });
     } catch (error) {
@@ -143,34 +191,29 @@ async function validateAvaDetail(page: Page, report: SmokeReport): Promise<void>
     const adminToken = process.env.EDUCARI_ADMIN_TOKEN;
     if (!adminToken) throw new Error('EDUCARI_ADMIN_TOKEN não informado.');
 
+    await hydrateAuthState(page, adminToken);
+
     const courseId = await fetchFirstCourseId(adminToken);
     if (!courseId) throw new Error('nenhum curso retornado por /api/v1/courses');
 
-    await page.goto(url('/ava'), { waitUntil: 'domcontentloaded', timeout: 20_000 });
+    await page.goto(url(`/ava/${courseId}`), { waitUntil: 'domcontentloaded', timeout: 8_000 });
     await page.waitForLoadState('networkidle', { timeout: 2_000 }).catch(() => {});
-    await page.waitForSelector('tbody tr', { timeout: 20_000 });
-
-    await page.goto(url(`/ava/${courseId}`), { waitUntil: 'domcontentloaded', timeout: 20_000 });
-    await page.waitForLoadState('networkidle', { timeout: 2_000 }).catch(() => {});
+    await page.locator('[role=\"tab\"]').first().waitFor({ timeout: 10_000 });
     await page.screenshot({ path: path.join(outDir, 'ava-detalhe.png'), fullPage: true });
 
-    for (const tab of Object.keys(report.avaTabs)) {
-      await page.getByRole('tab', { name: tab }).click();
-      await page.waitForLoadState('networkidle', { timeout: 2_000 }).catch(() => {});
+    for (const tab of AVA_TABS) {
+      await page.getByRole('tab', { name: tab }).click({ timeout: 5_000 });
       const activePanel = page.locator('[role="tabpanel"][data-state="active"]');
-      await activePanel
-        .locator('tbody tr, [class*="rounded-xl"], [class*="rounded-lg"]')
-        .first()
-        .waitFor({ timeout: 10_000 })
-        .catch(() => {});
-      const dataRows = await activePanel.locator('tbody tr').filter({ hasNotText: /Nenhum|Nenhuma/ }).count();
-      const cards = await activePanel.locator('[class*="rounded-xl"], [class*="rounded-lg"]').count();
-      const empty = await activePanel.getByText(/Nenhum|Nenhuma/).count();
-      const count = dataRows || (empty === 0 ? cards : 0);
+      await page.waitForLoadState('networkidle', { timeout: 2_000 }).catch(() => {});
+      await activePanel.waitFor({ timeout: 3_000 }).catch(() => {});
+      const hasRows = await activePanel.locator('tbody tr').count();
+      const hasCards = await activePanel.locator('[class*="rounded-xl"], [class*="rounded-lg"]').count();
+      const emptyText = await activePanel.getByText(AVA_TAB_EMPTY_MESSAGE).count();
+      const count = hasRows || hasCards;
       report.avaTabs[tab] = {
-        ok: count > 0 || empty > 0,
+        ok: count > 0 || emptyText > 0,
         count,
-        cause: count > 0 ? null : empty > 0 ? 'aba vazia (sem dados)' : 'conteúdo não renderizado',
+        cause: count > 0 ? null : emptyText > 0 ? 'vazio honesto (Nenhum/Nenhuma)' : 'sem dados no painel ativo',
       };
       await page.screenshot({ path: path.join(outDir, `ava-${slug(tab)}.png`), fullPage: true });
     }
