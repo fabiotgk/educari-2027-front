@@ -28,10 +28,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Quando o backend estiver respondendo, este tenant virá de
-  // GET /api/v1/tenant/config resolvido pelo subdomínio (ADR-004).
-  const tenant = MOCK_TENANT;
-
+  // Fallback visual; o tenant REAL vem do TenantProvider via /api/v1/tenant/me
+  // quando há sessão (substitui o MOCK).
   return (
     <html
       lang="pt-BR"
@@ -40,7 +38,7 @@ export default function RootLayout({
     >
       <body className="h-screen overflow-hidden font-sans">
         <QueryProvider>
-          <TenantProvider tenant={tenant}>
+          <TenantProvider fallback={MOCK_TENANT}>
             <TooltipProvider>{children}</TooltipProvider>
           </TenantProvider>
         </QueryProvider>

@@ -25,6 +25,10 @@ export function useToggleModule() {
         `/api/v1/modules/${featureKey}/toggle`,
         { method: 'PATCH', body: JSON.stringify({ enabled }) },
       ),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: KEY });
+      // Faz a sidebar reagir: o TenantProvider consome /tenant/me.
+      qc.invalidateQueries({ queryKey: ['tenant', 'me'] });
+    },
   });
 }

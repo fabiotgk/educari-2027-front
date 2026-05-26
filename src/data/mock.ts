@@ -1,11 +1,12 @@
 import type { TenantConfig } from '@/types/tenant';
 
 /**
- * Mock data — substituído por chamadas reais à API quando
- * educari-2027-infra estiver respondendo em /api/v1/tenant/config.
- *
- * Não usar em produção. Apenas para desenvolvimento UI até a
- * primeira integração funcional ficar pronta.
+ * Fallback visual do tenant — usado APENAS enquanto a chamada a
+ * /api/v1/tenant/me (TenantProvider) ainda não respondeu, ou na tela
+ * de login (sem sessão). O tenant REAL vem do backend; este objeto
+ * carrega só a paleta + info institucional padrão para evitar "flash"
+ * de tema. feature_flags vazio: nenhum módulo aparece como contratado
+ * até o real chegar (e a sidebar reage à toggle do marketplace).
  */
 export const MOCK_TENANT: TenantConfig = {
   tenant_id: 'tnt_demo_mariana',
@@ -29,29 +30,8 @@ export const MOCK_TENANT: TenantConfig = {
     contact_email: 'educacao@mariana.mg.gov.br',
     contact_phone: '(31) 3559-0000',
   },
-  feature_flags: [
-    // Módulos ativados no plano Mariana (exemplo MVP)
-    { feature_key: 'M01_school_registry', enabled: true },
-    { feature_key: 'M02_pre_enrollment', enabled: true },
-    { feature_key: 'M03_enrollment', enabled: true },
-    { feature_key: 'M04_class_diary_web', enabled: true },
-    { feature_key: 'M05_class_diary_mobile', enabled: true },
-    { feature_key: 'M06_attendance', enabled: true },
-    { feature_key: 'M07_grades', enabled: true },
-    { feature_key: 'M08_school_documents', enabled: true },
-    { feature_key: 'M09_school_calendar', enabled: true },
-    { feature_key: 'M11_communication', enabled: true },
-    { feature_key: 'M12_student_portal', enabled: true },
-    { feature_key: 'M13_mobile_family', enabled: true },
-    { feature_key: 'M14_mobile_managers', enabled: true },
-    { feature_key: 'M18_educacenso', enabled: true },
-    { feature_key: 'M19_evasion_monitoring', enabled: true },
-    { feature_key: 'M20_school_transport', enabled: true },
-    { feature_key: 'M21_school_meals', enabled: true },
-    { feature_key: 'M22_financial', enabled: true },
-    { feature_key: 'M26_access_audit', enabled: true },
-    { feature_key: 'M30_helpdesk', enabled: true },
-  ],
+  // feature_flags vazio: o real vem de GET /api/v1/tenant/me.
+  feature_flags: [],
   settings: [],
 };
 

@@ -1,7 +1,11 @@
 'use client';
 
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+
 import type { TenantConfig } from '@/types/tenant';
+import { apiFetch } from '@/lib/api-client';
+import { getToken } from '@/lib/auth';
 
 interface TenantContextValue {
   tenant: TenantConfig;
@@ -12,32 +16,49 @@ interface TenantContextValue {
 const TenantContext = createContext<TenantContextValue | null>(null);
 
 interface TenantProviderProps {
-  tenant: TenantConfig;
+  /** Fallback visual usado antes do fetch e em telas sem sessão (ex.: login). */
+  fallback: TenantConfig;
   children: React.ReactNode;
 }
 
 /**
- * Provider que disponibiliza configuração do tenant atual para
- * toda a árvore de componentes — incluindo theme, feature flags
- * e settings.
- *
- * Ver docs/adr/008-customizacao-tenant.md e ADR-019.
+ * Disponibiliza a configuração do tenant atual (tema + feature flags +
+ * settings) para a árvore. Em rotas autenticadas, busca a configuração
+ * real em GET /api/v1/tenant/me; sem sessão, usa o fallback (paleta
+ * default + flags vazias). Quando o marketplace altera flags, ele
+ * invalida `['tenant','me']` e a sidebar reage na hora.
  */
-export function TenantProvider({ tenant, children }: TenantProviderProps) {
-  const value = useMemo<TenantContextValue>(() => {
-    const flagsMap = new Map(
-      tenant.feature_flags.map((f) => [f.feature_key, f.enabled])
-    );
+export function TenantProvider({ fallback, children }: TenantProviderProps) {
+  // Token é client-only; observamos mudanças para refetch após login/logout.
+  const [hasToken, setHasToken] = useState<boolean>(false);
+  useEffect(() => {
+    const sync = () => setHasToken(Boolean(getToken()));
+    sync();
+    window.addEventListener('educari-auth', sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener('educari-auth', sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
 
+  const { data } = useQuery({
+    queryKey: ['tenant', 'me'],
+    queryFn: () => apiFetch<TenantConfig>('/api/v1/tenant/me'),
+    enabled: hasToken,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const tenant = data ?? fallback;
+
+  const value = useMemo<TenantContextValue>(() => {
+    const flagsMap = new Map(tenant.feature_flags.map((f) => [f.feature_key, f.enabled]));
     return {
       tenant,
       hasFeature: (featureKey: string) => flagsMap.get(featureKey) ?? false,
       isModuleEnabled: (moduleCode: string) => {
-        // moduleCode = "M01", "M03", etc — encontra prefixo
         for (const [key, enabled] of flagsMap.entries()) {
-          if (key.startsWith(`${moduleCode}_`) && enabled) {
-            return true;
-          }
+          if (key.startsWith(`${moduleCode}_`) && enabled) return true;
         }
         return false;
       },
@@ -54,16 +75,11 @@ export function TenantProvider({ tenant, children }: TenantProviderProps) {
 
 export function useTenant(): TenantContextValue {
   const ctx = useContext(TenantContext);
-  if (!ctx) {
-    throw new Error('useTenant deve ser usado dentro de TenantProvider');
-  }
+  if (!ctx) throw new Error('useTenant deve ser usado dentro de TenantProvider');
   return ctx;
 }
 
-/**
- * Aplica CSS variables do tema do tenant no :root.
- * Permite tematização dinâmica sem rebuild.
- */
+/** Aplica CSS variables do tema do tenant. */
 function TenantThemeStyles({ tenant }: { tenant: TenantConfig }) {
   const css = `
     :root {
