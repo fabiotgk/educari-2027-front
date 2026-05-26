@@ -9,6 +9,8 @@ export interface StaffMember {
   registration_number: string | null;
   role_title: string | null;
   admission_date: string | null;
+  current_school_id?: string | null;
+  current_school_name?: string | null;
   status: string | null;
   created_at: string | null;
   updated_at: string | null;
