@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 
 import { listResource } from '@/lib/api-client';
@@ -15,7 +16,7 @@ import {
 } from '@/components/ui/table';
 import { formatDate } from '@/lib/format';
 
-/** Forma mínima da matrícula que esta aba consome (ver EnrollmentResource). */
+/** Forma mínima da matrícula escolar consumida nesta aba. */
 interface EnrollmentRow {
   id: string;
   academic_year: number | string | null;
@@ -31,7 +32,7 @@ const STATUS_LABEL: Record<string, string> = {
   completed: 'Concluída',
 };
 
-/** Aba de relacionamento: matrículas vinculadas a este aluno. */
+/** Aba de relacionamento: matrículas escolares do aluno. */
 export function StudentEnrollmentsTab({ studentId }: { studentId: string }) {
   const query = useQuery({
     queryKey: ['students', 'enrollments', studentId],
@@ -68,16 +69,26 @@ export function StudentEnrollmentsTab({ studentId }: { studentId: string }) {
             <TableHead>Ano letivo</TableHead>
             <TableHead>Data de matrícula</TableHead>
             <TableHead>Situação</TableHead>
+            <TableHead>Acesso</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {rows.map((e) => (
             <TableRow key={e.id}>
-              <TableCell className="font-medium">{e.class?.name ?? '—'}</TableCell>
+              <TableCell className="font-medium">
+                <Link href={`/matriculas/${e.id}`} className="text-primary underline-offset-2 hover:underline">
+                  {e.class?.name ?? '—'}
+                </Link>
+              </TableCell>
               <TableCell className="tabular-nums">{e.academic_year ?? '—'}</TableCell>
               <TableCell>{formatDate(e.enrolled_at)}</TableCell>
               <TableCell>
                 <Badge variant="secondary">{STATUS_LABEL[e.status] ?? e.status}</Badge>
+              </TableCell>
+              <TableCell>
+                <Link href={`/matriculas/${e.id}`} className="text-xs text-primary underline-offset-2 hover:underline">
+                  Ver detalhes
+                </Link>
               </TableCell>
             </TableRow>
           ))}
