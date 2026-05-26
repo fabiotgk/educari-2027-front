@@ -1,0 +1,127 @@
+'use client';
+
+import * as React from 'react';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ArrowLeft, Loader2 } from 'lucide-react';
+
+import { Topbar } from '@/components/dashboard/topbar';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
+import { Field } from '@/components/form/field';
+import { applyApiErrors } from '@/lib/form';
+import { toastError, toastSuccess } from '@/lib/toast';
+import { useCourses } from '@/features/courses/hooks';
+import {
+  buildCourseModulePayload,
+  courseModuleSchema,
+  courseModuleToForm,
+  emptyCourseModuleForm,
+  type CourseModuleFormValues,
+} from './schema';
+import { useCourseModule, useCreateCourseModule, useUpdateCourseModule } from './hooks';
+
+export function CourseModuleFormPage({ moduleId }: { moduleId?: string }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const isEdit = Boolean(moduleId);
+  const detail = useCourseModule(moduleId ?? '');
+  const courses = useCourses({ limit: 100 });
+  const form = useForm<CourseModuleFormValues>({
+    resolver: zodResolver(courseModuleSchema),
+    defaultValues: { ...emptyCourseModuleForm, course_id: searchParams.get('course_id') ?? '' },
+  });
+  const { control, register, formState: { errors } } = form;
+  const create = useCreateCourseModule();
+  const update = useUpdateCourseModule();
+  const submitting = create.isPending || update.isPending;
+
+  React.useEffect(() => {
+    if (isEdit && detail.data) form.reset(courseModuleToForm(detail.data));
+  }, [detail.data, form, isEdit]);
+
+  const onSubmit = form.handleSubmit(async (values) => {
+    try {
+      const payload = buildCourseModulePayload(values);
+      if (isEdit && moduleId) {
+        await update.mutateAsync({ id: moduleId, body: payload });
+        toastSuccess('Módulo atualizado com sucesso.');
+        router.push(`/ava/modulos/${moduleId}`);
+      } else {
+        const created = await create.mutateAsync(payload);
+        toastSuccess('Módulo criado com sucesso.');
+        router.push(`/ava/modulos/${created.id}`);
+      }
+    } catch (err) {
+      if (!applyApiErrors(err, form.setError)) toastError(err);
+    }
+  });
+
+  const backHref = isEdit ? `/ava/modulos/${moduleId}` : '/ava/modulos';
+
+  return (
+    <>
+      <Topbar breadcrumbs={[{ label: 'AVA / LMS' }, { label: 'Módulos', href: '/ava/modulos' }, { label: isEdit ? 'Editar' : 'Novo módulo' }]} />
+      <main className="flex-1 overflow-auto bg-muted/30">
+        <form onSubmit={onSubmit}>
+          <div className="space-y-6 p-6 lg:p-8">
+            <div className="flex items-center gap-3">
+              <Button type="button" variant="ghost" size="icon-sm" asChild><Link href={backHref} aria-label="Voltar"><ArrowLeft /></Link></Button>
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight">{isEdit ? 'Editar módulo' : 'Novo módulo'}</h1>
+                <p className="text-sm text-muted-foreground">Agrupe aulas dentro de um curso do AVA.</p>
+              </div>
+            </div>
+            {isEdit && detail.isLoading ? <Skeleton className="h-80 w-full rounded-xl" /> : (
+              <Card>
+                <CardHeader><CardTitle className="text-base">Dados do módulo</CardTitle></CardHeader>
+                <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field label="Curso" required error={errors.course_id?.message} className="sm:col-span-2">
+                    <Controller control={control} name="course_id" render={({ field }) => (
+                      <Select value={field.value} onValueChange={field.onChange}>
+                        <SelectTrigger aria-invalid={!!errors.course_id}><SelectValue placeholder="Selecione o curso" /></SelectTrigger>
+                        <SelectContent>
+                          {(courses.data?.data ?? []).map((course) => <SelectItem key={course.id} value={course.id}>{course.title}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    )} />
+                  </Field>
+                  <Field label="Título" htmlFor="title" required error={errors.title?.message} className="sm:col-span-2">
+                    <Input id="title" {...register('title')} aria-invalid={!!errors.title} />
+                  </Field>
+                  <Field label="Posição" htmlFor="position" error={errors.position?.message}>
+                    <Input id="position" type="number" min={0} {...register('position')} aria-invalid={!!errors.position} />
+                  </Field>
+                  <Field label="Publicação">
+                    <Controller control={control} name="is_published" render={({ field }) => (
+                      <label className="flex h-10 items-center gap-2 text-sm">
+                        <Checkbox checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} />
+                        Módulo publicado
+                      </label>
+                    )} />
+                  </Field>
+                  <Field label="Descrição" htmlFor="description" error={errors.description?.message} className="sm:col-span-2">
+                    <Textarea id="description" rows={5} {...register('description')} aria-invalid={!!errors.description} />
+                  </Field>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+          <div className="border-t bg-background">
+            <div className="flex items-center justify-end gap-2 px-6 py-4 lg:px-8">
+              <Button type="button" variant="outline" asChild><Link href={backHref}>Cancelar</Link></Button>
+              <Button type="submit" disabled={submitting}>{submitting && <Loader2 className="animate-spin" />}{isEdit ? 'Salvar alterações' : 'Criar módulo'}</Button>
+            </div>
+          </div>
+        </form>
+      </main>
+    </>
+  );
+}
