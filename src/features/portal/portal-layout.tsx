@@ -9,8 +9,8 @@ import { PortalAuthGate, usePortalAuth } from '@/lib/providers/portal-auth-provi
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
-  { href: '/portal', label: 'Início' },
-  { href: '/portal/comunicados', label: 'Comunicados' },
+  { href: '/cidadao', label: 'Início' },
+  { href: '/cidadao/comunicados', label: 'Comunicados' },
 ];
 
 export function PortalLayout({ children }: { children: React.ReactNode }) {
@@ -25,7 +25,7 @@ function PortalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { account, token, logout } = usePortalAuth();
-  const isLogin = pathname === '/portal/login';
+  const isLogin = pathname === '/cidadao/login';
 
   if (isLogin) return children;
 
@@ -60,7 +60,7 @@ function PortalShell({ children }: { children: React.ReactNode }) {
 
           <div className="flex items-center gap-2">
             <Button asChild variant="ghost" size="icon" aria-label="Comunicados">
-              <Link href="/portal/comunicados">
+              <Link href="/cidadao/comunicados">
                 <Bell className="h-4 w-4" />
               </Link>
             </Button>
@@ -75,7 +75,7 @@ function PortalShell({ children }: { children: React.ReactNode }) {
               disabled={!token}
               onClick={() => {
                 logout();
-                router.replace('/portal/login');
+                router.replace('/cidadao/login');
               }}
             >
               <LogOut className="h-4 w-4" />

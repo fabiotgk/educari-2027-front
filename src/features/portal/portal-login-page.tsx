@@ -46,7 +46,7 @@ export function PortalLoginPage() {
   async function onSubmit(values: PortalLoginForm) {
     try {
       await login(values);
-      router.push('/portal');
+      router.push('/cidadao');
     } catch (error) {
       const applied = applyApiErrors(error, form.setError);
       toastError(error, applied ? 'Verifique os campos destacados.' : 'Não foi possível entrar.');

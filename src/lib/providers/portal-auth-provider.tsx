@@ -127,12 +127,12 @@ export function PortalAuthGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { token, ready } = usePortalAuth();
-  const isLogin = pathname === '/portal/login';
+  const isLogin = pathname === '/cidadao/login';
 
   useEffect(() => {
     if (!ready) return;
-    if (!token && !isLogin) router.replace('/portal/login');
-    if (token && isLogin) router.replace('/portal');
+    if (!token && !isLogin) router.replace('/cidadao/login');
+    if (token && isLogin) router.replace('/cidadao');
   }, [isLogin, ready, router, token]);
 
   if (!ready) {

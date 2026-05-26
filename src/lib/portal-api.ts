@@ -30,7 +30,7 @@ export async function portalFetch<T>(path: string, init: RequestInit = {}): Prom
 
   if (res.status === 401) {
     clearPortalSession();
-    if (typeof window !== 'undefined') window.location.href = '/portal/login';
+    if (typeof window !== 'undefined') window.location.href = '/cidadao/login';
     throw new ApiError(401, 'Sessão expirada. Entre novamente.');
   }
 

@@ -36,7 +36,7 @@ export function PortalAttendancePage({ studentId }: PortalAttendancePageProps) {
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <Button asChild variant="ghost" size="sm" className="mb-2 -ml-2">
-            <Link href="/portal">
+            <Link href="/cidadao">
               <ArrowLeft className="h-4 w-4" />
               Voltar
             </Link>

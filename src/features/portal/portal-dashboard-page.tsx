@@ -52,7 +52,7 @@ export function PortalDashboardPage() {
           </CardHeader>
           <CardContent>
             <Button asChild variant="outline" size="sm">
-              <Link href="/portal/comunicados">Ver comunicados</Link>
+              <Link href="/cidadao/comunicados">Ver comunicados</Link>
             </Button>
           </CardContent>
         </Card>
@@ -77,13 +77,13 @@ export function PortalDashboardPage() {
                 </CardHeader>
                 <CardContent className="flex flex-wrap gap-2">
                   <Button asChild size="sm">
-                    <Link href={`/portal/alunos/${student.id}/boletim`}>
+                    <Link href={`/cidadao/alunos/${student.id}/boletim`}>
                       <BookOpenCheck className="h-4 w-4" />
                       Boletim
                     </Link>
                   </Button>
                   <Button asChild variant="outline" size="sm">
-                    <Link href={`/portal/alunos/${student.id}/frequencia`}>
+                    <Link href={`/cidadao/alunos/${student.id}/frequencia`}>
                       <CalendarCheck className="h-4 w-4" />
                       Frequência
                     </Link>
