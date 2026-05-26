@@ -180,7 +180,7 @@ o backend `educari-2027-infra` estiver respondendo:
 
 ```bash
 # .env.local
-NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_URL=http://localhost:8347
 NEXTAUTH_URL=http://mariana.educari.test:3000
 NEXTAUTH_SECRET=<generate>
 ```
