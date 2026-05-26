@@ -11,12 +11,12 @@ import { Topbar } from '@/components/dashboard/topbar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Field } from '@/components/form/field';
 import { applyApiErrors } from '@/lib/form';
 import { toastError, toastSuccess } from '@/lib/toast';
-import { useLessons } from '@/features/lessons/hooks';
+import { ResourceCombobox } from '@/components/form/resource-combobox';
+import type { Lesson } from '@/features/lessons/types';
 import {
   buildLessonMaterialPayload,
   emptyLessonMaterialForm,
@@ -31,7 +31,6 @@ export function LessonMaterialFormPage({ materialId }: { materialId?: string }) 
   const searchParams = useSearchParams();
   const isEdit = Boolean(materialId);
   const detail = useLessonMaterial(materialId ?? '');
-  const lessons = useLessons({ limit: 100 });
   const form = useForm<LessonMaterialFormValues>({
     resolver: zodResolver(lessonMaterialSchema),
     defaultValues: { ...emptyLessonMaterialForm, lesson_id: searchParams.get('lesson_id') ?? '' },
@@ -83,10 +82,13 @@ export function LessonMaterialFormPage({ materialId }: { materialId?: string }) 
                 <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field label="Aula" required error={errors.lesson_id?.message} className="sm:col-span-2">
                     <Controller control={control} name="lesson_id" render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger aria-invalid={!!errors.lesson_id}><SelectValue placeholder="Selecione a aula" /></SelectTrigger>
-                        <SelectContent>{(lessons.data?.data ?? []).map((lesson) => <SelectItem key={lesson.id} value={lesson.id}>{lesson.title}</SelectItem>)}</SelectContent>
-                      </Select>
+                      <ResourceCombobox<Lesson>
+                        value={field.value || null}
+                        onChange={(itemId) => field.onChange(itemId ?? '')}
+                        resource="lessons"
+                        labelFn={(lesson) => lesson.title}
+                        placeholder="Selecione a aula"
+                      />
                     )} />
                   </Field>
                   <Field label="Título" htmlFor="title" required error={errors.title?.message} className="sm:col-span-2">

@@ -12,13 +12,20 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Field } from '@/components/form/field';
 import { applyApiErrors } from '@/lib/form';
 import { toastError, toastSuccess } from '@/lib/toast';
-import { useCourseModules } from '@/features/course-modules/hooks';
+import { ResourceCombobox } from '@/components/form/resource-combobox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import type { CourseModule } from '@/features/course-modules/types';
 import { LESSON_CONTENT_TYPE_LABELS } from './types';
 import { buildLessonPayload, emptyLessonForm, lessonSchema, lessonToForm, type LessonFormValues } from './schema';
 import { useCreateLesson, useLesson, useUpdateLesson } from './hooks';
@@ -28,7 +35,6 @@ export function LessonFormPage({ lessonId }: { lessonId?: string }) {
   const searchParams = useSearchParams();
   const isEdit = Boolean(lessonId);
   const detail = useLesson(lessonId ?? '');
-  const modules = useCourseModules({ limit: 100 });
   const form = useForm<LessonFormValues>({
     resolver: zodResolver(lessonSchema),
     defaultValues: { ...emptyLessonForm, course_module_id: searchParams.get('course_module_id') ?? '' },
@@ -81,12 +87,13 @@ export function LessonFormPage({ lessonId }: { lessonId?: string }) {
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field label="Módulo" required error={errors.course_module_id?.message} className="sm:col-span-2">
                       <Controller control={control} name="course_module_id" render={({ field }) => (
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger aria-invalid={!!errors.course_module_id}><SelectValue placeholder="Selecione o módulo" /></SelectTrigger>
-                          <SelectContent>
-                            {(modules.data?.data ?? []).map((module) => <SelectItem key={module.id} value={module.id}>{module.title}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
+                        <ResourceCombobox<CourseModule>
+                          value={field.value || null}
+                          onChange={(itemId) => field.onChange(itemId ?? '')}
+                          resource="course-modules"
+                          labelFn={(module) => module.title}
+                          placeholder="Selecione o módulo"
+                        />
                       )} />
                     </Field>
                     <Field label="Título" htmlFor="title" required error={errors.title?.message} className="sm:col-span-2">

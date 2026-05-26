@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
 import { Topbar } from '@/components/dashboard/topbar';
+import { ResourceCombobox } from '@/components/form/resource-combobox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -17,6 +18,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Field } from '@/components/form/field';
 import { applyApiErrors } from '@/lib/form';
 import { toastError, toastSuccess } from '@/lib/toast';
+import type { Course } from '@/features/courses/types';
+import type { Lesson } from '@/features/lessons/types';
 import {
   buildLmsQuizPayload,
   emptyLmsQuizForm,
@@ -83,11 +86,35 @@ export function LmsQuizFormPage({ quizId }: { quizId?: string }) {
                     <Field label="Título" htmlFor="title" required error={errors.title?.message} className="sm:col-span-2">
                       <Input id="title" {...register('title')} aria-invalid={!!errors.title} />
                     </Field>
-                    <Field label="Curso (UUID)" htmlFor="course_id" error={errors.course_id?.message}>
-                      <Input id="course_id" {...register('course_id')} aria-invalid={!!errors.course_id} />
+                    <Field label="Curso" htmlFor="course_id" error={errors.course_id?.message}>
+                      <Controller
+                        control={control}
+                        name="course_id"
+                        render={({ field }) => (
+                          <ResourceCombobox<Course>
+                            value={field.value || null}
+                            onChange={(itemId) => field.onChange(itemId ?? '')}
+                            resource="courses"
+                            labelFn={(course) => course.title}
+                            placeholder="Selecione um curso"
+                          />
+                        )}
+                      />
                     </Field>
-                    <Field label="Aula (UUID)" htmlFor="lesson_id" error={errors.lesson_id?.message}>
-                      <Input id="lesson_id" {...register('lesson_id')} aria-invalid={!!errors.lesson_id} />
+                    <Field label="Aula" htmlFor="lesson_id" error={errors.lesson_id?.message}>
+                      <Controller
+                        control={control}
+                        name="lesson_id"
+                        render={({ field }) => (
+                          <ResourceCombobox<Lesson>
+                            value={field.value || null}
+                            onChange={(itemId) => field.onChange(itemId ?? '')}
+                            resource="lessons"
+                            labelFn={(lesson) => lesson.title}
+                            placeholder="Selecione uma aula"
+                          />
+                        )}
+                      />
                     </Field>
                     <Field label="Descrição" htmlFor="description" error={errors.description?.message} className="sm:col-span-2">
                       <Textarea id="description" rows={5} {...register('description')} aria-invalid={!!errors.description} />

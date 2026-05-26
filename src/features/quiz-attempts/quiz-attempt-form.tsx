@@ -8,14 +8,23 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
 import { Topbar } from '@/components/dashboard/topbar';
+import { ResourceCombobox } from '@/components/form/resource-combobox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Field } from '@/components/form/field';
 import { applyApiErrors } from '@/lib/form';
 import { toastError, toastSuccess } from '@/lib/toast';
+import type { Student } from '@/features/students/types';
+import type { LmsQuiz } from '@/features/lms-quizzes/types';
 import { QUIZ_ATTEMPT_STATUS_LABELS } from './types';
 import {
   buildQuizAttemptPayload,
@@ -79,16 +88,40 @@ export function QuizAttemptFormPage({ attemptId }: { attemptId?: string }) {
             {isEdit && detail.isLoading ? <Skeleton className="h-96 w-full rounded-xl" /> : (
               <Card>
                 <CardHeader><CardTitle className="text-base">Tentativa</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Field label="Avaliação (UUID)" htmlFor="lms_quiz_id" required error={errors.lms_quiz_id?.message}>
-                    <Input id="lms_quiz_id" {...register('lms_quiz_id')} aria-invalid={!!errors.lms_quiz_id} />
-                  </Field>
-                  <Field label="Número" htmlFor="attempt_number" required error={errors.attempt_number?.message}>
-                    <Input id="attempt_number" type="number" min={1} {...register('attempt_number')} aria-invalid={!!errors.attempt_number} />
-                  </Field>
-                  <Field label="Aluno (UUID)" htmlFor="student_id" error={errors.student_id?.message}>
-                    <Input id="student_id" {...register('student_id')} aria-invalid={!!errors.student_id} />
-                  </Field>
+                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <Field label="Avaliação (UUID)" htmlFor="lms_quiz_id" required error={errors.lms_quiz_id?.message}>
+                      <Controller
+                        control={control}
+                        name="lms_quiz_id"
+                        render={({ field }) => (
+                          <ResourceCombobox<LmsQuiz>
+                            value={field.value || null}
+                            onChange={(itemId) => field.onChange(itemId ?? '')}
+                            resource="lms-quizzes"
+                            labelFn={(quiz) => quiz.title}
+                            placeholder="Selecione uma avaliação"
+                          />
+                        )}
+                      />
+                    </Field>
+                    <Field label="Número" htmlFor="attempt_number" required error={errors.attempt_number?.message}>
+                      <Input id="attempt_number" type="number" min={1} {...register('attempt_number')} aria-invalid={!!errors.attempt_number} />
+                    </Field>
+                    <Field label="Aluno (UUID)" htmlFor="student_id" error={errors.student_id?.message}>
+                      <Controller
+                        control={control}
+                        name="student_id"
+                        render={({ field }) => (
+                          <ResourceCombobox<Student>
+                            value={field.value || null}
+                            onChange={(itemId) => field.onChange(itemId ?? '')}
+                            resource="students"
+                            labelFn={(student) => student.full_name}
+                            placeholder="Selecione um aluno"
+                          />
+                        )}
+                      />
+                    </Field>
                   <Field label="Usuário (UUID)" htmlFor="user_id" error={errors.user_id?.message}>
                     <Input id="user_id" {...register('user_id')} aria-invalid={!!errors.user_id} />
                   </Field>

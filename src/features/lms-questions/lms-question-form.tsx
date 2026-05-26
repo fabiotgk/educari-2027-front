@@ -8,15 +8,23 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
 import { Topbar } from '@/components/dashboard/topbar';
+import { ResourceCombobox } from '@/components/form/resource-combobox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Field } from '@/components/form/field';
 import { applyApiErrors } from '@/lib/form';
 import { toastError, toastSuccess } from '@/lib/toast';
+import type { LmsQuiz } from '@/features/lms-quizzes/types';
 import { LMS_QUESTION_TYPE_LABELS } from './types';
 import {
   buildLmsQuestionPayload,
@@ -83,7 +91,19 @@ export function LmsQuestionFormPage({ questionId }: { questionId?: string }) {
                   <CardHeader><CardTitle className="text-base">Questão</CardTitle></CardHeader>
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field label="Avaliação (UUID)" htmlFor="lms_quiz_id" required error={errors.lms_quiz_id?.message}>
-                      <Input id="lms_quiz_id" {...register('lms_quiz_id')} aria-invalid={!!errors.lms_quiz_id} />
+                      <Controller
+                        control={control}
+                        name="lms_quiz_id"
+                        render={({ field }) => (
+                          <ResourceCombobox<LmsQuiz>
+                            value={field.value || null}
+                            onChange={(itemId) => field.onChange(itemId ?? '')}
+                            resource="lms-quizzes"
+                            labelFn={(quiz) => quiz.title}
+                            placeholder="Selecione uma avaliação"
+                          />
+                        )}
+                      />
                     </Field>
                     <Field label="Tipo" required error={errors.type?.message}>
                       <Controller control={control} name="type" render={({ field }) => (
