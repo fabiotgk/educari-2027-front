@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ResourceCombobox } from '@/components/form/resource-combobox';
 import {
   Select,
   SelectContent,
@@ -32,6 +33,12 @@ import {
   type AccessGrantFormValues,
 } from './schema';
 import { useCreateAccessGrant, useAccessGrant, useUpdateAccessGrant } from './hooks';
+
+interface AccessGrantUserOption {
+  id: string;
+  name: string;
+  email?: string | null;
+}
 
 export function AccessGrantFormPage({ resourceId }: { resourceId?: string }) {
   const router = useRouter();
@@ -115,17 +122,26 @@ export function AccessGrantFormPage({ resourceId }: { resourceId?: string }) {
                   </CardHeader>
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <Field
-                      label="Usuário (UUID)"
+                      label="Usuário"
                       htmlFor="user_id"
                       required
                       error={errors.user_id?.message}
                       className="sm:col-span-2"
                     >
-                      <Input
-                        id="user_id"
-                        {...register('user_id')}
-                        aria-invalid={!!errors.user_id}
-                        placeholder="00000000-0000-0000-0000-000000000000"
+                      <Controller
+                        control={control}
+                        name="user_id"
+                        render={({ field }) => (
+                          <ResourceCombobox<AccessGrantUserOption>
+                            value={field.value || null}
+                            onChange={(itemId) => field.onChange(itemId ?? '')}
+                            resource="users"
+                            labelFn={(user) =>
+                              user.email ? `${user.name} (${user.email})` : user.name
+                            }
+                            placeholder="Selecione um usuário"
+                          />
+                        )}
                       />
                     </Field>
                     <Field
@@ -208,15 +224,24 @@ export function AccessGrantFormPage({ resourceId }: { resourceId?: string }) {
                       />
                     </Field>
                     <Field
-                      label="Concedido por (UUID)"
+                      label="Concedido por"
                       htmlFor="granted_by_user_id"
                       error={errors.granted_by_user_id?.message}
                     >
-                      <Input
-                        id="granted_by_user_id"
-                        {...register('granted_by_user_id')}
-                        aria-invalid={!!errors.granted_by_user_id}
-                        placeholder="UUID do usuário que concedeu"
+                      <Controller
+                        control={control}
+                        name="granted_by_user_id"
+                        render={({ field }) => (
+                          <ResourceCombobox<AccessGrantUserOption>
+                            value={field.value || null}
+                            onChange={(itemId) => field.onChange(itemId ?? '')}
+                            resource="users"
+                            labelFn={(user) =>
+                              user.email ? `${user.name} (${user.email})` : user.name
+                            }
+                            placeholder="Selecione o usuário"
+                          />
+                        )}
                       />
                     </Field>
                   </CardContent>

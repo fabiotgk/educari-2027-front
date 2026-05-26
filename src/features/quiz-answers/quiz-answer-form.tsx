@@ -8,15 +8,24 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
 import { Topbar } from '@/components/dashboard/topbar';
+import { ResourceCombobox } from '@/components/form/resource-combobox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Field } from '@/components/form/field';
 import { applyApiErrors } from '@/lib/form';
 import { toastError, toastSuccess } from '@/lib/toast';
+import type { QuizAttempt } from '@/features/quiz-attempts/types';
+import type { LmsQuestion } from '@/features/lms-questions/types';
 import {
   buildQuizAnswerPayload,
   emptyQuizAnswerForm,
@@ -83,13 +92,37 @@ export function QuizAnswerFormPage({ answerId }: { answerId?: string }) {
             {isEdit && detail.isLoading ? <Skeleton className="h-96 w-full rounded-xl" /> : (
               <Card>
                 <CardHeader><CardTitle className="text-base">Resposta</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <Field label="Tentativa (UUID)" htmlFor="quiz_attempt_id" required error={errors.quiz_attempt_id?.message}>
-                    <Input id="quiz_attempt_id" {...register('quiz_attempt_id')} aria-invalid={!!errors.quiz_attempt_id} />
-                  </Field>
-                  <Field label="Questão (UUID)" htmlFor="lms_question_id" required error={errors.lms_question_id?.message}>
-                    <Input id="lms_question_id" {...register('lms_question_id')} aria-invalid={!!errors.lms_question_id} />
-                  </Field>
+                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <Field label="Tentativa (UUID)" htmlFor="quiz_attempt_id" required error={errors.quiz_attempt_id?.message}>
+                      <Controller
+                        control={control}
+                        name="quiz_attempt_id"
+                        render={({ field }) => (
+                          <ResourceCombobox<QuizAttempt>
+                            value={field.value || null}
+                            onChange={(itemId) => field.onChange(itemId ?? '')}
+                            resource="quiz-attempts"
+                            labelFn={(attempt) => `Tentativa #${attempt.attempt_number}`}
+                            placeholder="Selecione uma tentativa"
+                          />
+                        )}
+                      />
+                    </Field>
+                    <Field label="Questão (UUID)" htmlFor="lms_question_id" required error={errors.lms_question_id?.message}>
+                      <Controller
+                        control={control}
+                        name="lms_question_id"
+                        render={({ field }) => (
+                          <ResourceCombobox<LmsQuestion>
+                            value={field.value || null}
+                            onChange={(itemId) => field.onChange(itemId ?? '')}
+                            resource="lms-questions"
+                            labelFn={(question) => question.statement}
+                            placeholder="Selecione uma questão"
+                          />
+                        )}
+                      />
+                    </Field>
                   <Field label="Correção" error={errors.is_correct?.message}>
                     <Controller control={control} name="is_correct" render={({ field }) => (
                       <Select value={field.value} onValueChange={field.onChange}>

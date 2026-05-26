@@ -9,16 +9,16 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 
 import { Topbar } from '@/components/dashboard/topbar';
 import { Button } from '@/components/ui/button';
+import { ResourceCombobox } from '@/components/form/resource-combobox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 import { Field } from '@/components/form/field';
 import { applyApiErrors } from '@/lib/form';
 import { toastError, toastSuccess } from '@/lib/toast';
-import { useCourses } from '@/features/courses/hooks';
+import type { Course } from '@/features/courses/types';
 import {
   buildCourseModulePayload,
   courseModuleSchema,
@@ -33,7 +33,6 @@ export function CourseModuleFormPage({ moduleId }: { moduleId?: string }) {
   const searchParams = useSearchParams();
   const isEdit = Boolean(moduleId);
   const detail = useCourseModule(moduleId ?? '');
-  const courses = useCourses({ limit: 100 });
   const form = useForm<CourseModuleFormValues>({
     resolver: zodResolver(courseModuleSchema),
     defaultValues: { ...emptyCourseModuleForm, course_id: searchParams.get('course_id') ?? '' },
@@ -85,12 +84,13 @@ export function CourseModuleFormPage({ moduleId }: { moduleId?: string }) {
                 <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field label="Curso" required error={errors.course_id?.message} className="sm:col-span-2">
                     <Controller control={control} name="course_id" render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger aria-invalid={!!errors.course_id}><SelectValue placeholder="Selecione o curso" /></SelectTrigger>
-                        <SelectContent>
-                          {(courses.data?.data ?? []).map((course) => <SelectItem key={course.id} value={course.id}>{course.title}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
+                      <ResourceCombobox<Course>
+                        value={field.value || null}
+                        onChange={(itemId) => field.onChange(itemId ?? '')}
+                        resource="courses"
+                        labelFn={(course) => course.title}
+                        placeholder="Selecione o curso"
+                      />
                     )} />
                   </Field>
                   <Field label="Título" htmlFor="title" required error={errors.title?.message} className="sm:col-span-2">

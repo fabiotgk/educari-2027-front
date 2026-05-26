@@ -9,6 +9,7 @@ import { ArrowLeft, Loader2 } from 'lucide-react';
 
 import { Topbar } from '@/components/dashboard/topbar';
 import { Button } from '@/components/ui/button';
+import { ResourceCombobox } from '@/components/form/resource-combobox';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +24,7 @@ import {
 import { Field } from '@/components/form/field';
 import { applyApiErrors } from '@/lib/form';
 import { toastError, toastSuccess } from '@/lib/toast';
+import type { Student } from '@/features/students/types';
 import {
   DIFFICULTY_LABELS,
   STATUS_LABELS,
@@ -37,7 +39,6 @@ import {
 import {
   useCreateLearningPath,
   useLearningPath,
-  useStudentOptions,
   useUpdateLearningPath,
 } from './hooks';
 
@@ -45,7 +46,6 @@ export function LearningPathFormPage({ resourceId }: { resourceId?: string }) {
   const router = useRouter();
   const isEdit = Boolean(resourceId);
   const detail = useLearningPath(resourceId ?? '');
-  const studentsQuery = useStudentOptions();
 
   const form = useForm<LearningPathFormValues>({
     resolver: zodResolver(learningPathSchema),
@@ -83,7 +83,6 @@ export function LearningPathFormPage({ resourceId }: { resourceId?: string }) {
   });
 
   const backHref = isEdit ? `/ia-adaptativo/${resourceId}` : '/ia-adaptativo';
-  const studentOptions = studentsQuery.data?.data ?? [];
 
   return (
     <>
@@ -183,18 +182,13 @@ export function LearningPathFormPage({ resourceId }: { resourceId?: string }) {
                         control={control}
                         name="student_id"
                         render={({ field }) => (
-                          <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger aria-invalid={!!errors.student_id}>
-                              <SelectValue placeholder="Selecione um aluno…" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {studentOptions.map((s) => (
-                                <SelectItem key={s.id} value={s.id}>
-                                  {s.full_name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <ResourceCombobox<Student>
+                            value={field.value || null}
+                            onChange={(itemId) => field.onChange(itemId ?? '')}
+                            resource="students"
+                            labelFn={(student) => student.full_name}
+                            placeholder="Selecione um aluno…"
+                          />
                         )}
                       />
                     </Field>

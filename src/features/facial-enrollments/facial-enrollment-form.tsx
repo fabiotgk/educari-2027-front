@@ -6,10 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-
 import { Topbar } from '@/components/dashboard/topbar';
 import { Button } from '@/components/ui/button';
+import { ResourceCombobox } from '@/components/form/resource-combobox';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,7 +23,7 @@ import {
 import { Field } from '@/components/form/field';
 import { applyApiErrors } from '@/lib/form';
 import { toastError, toastSuccess } from '@/lib/toast';
-import { listResource } from '@/lib/api-client';
+import type { Student } from '@/features/students/types';
 import {
   buildFacialEnrollmentPayload,
   emptyFacialEnrollmentForm,
@@ -39,11 +38,6 @@ import {
 } from './hooks';
 import { FACIAL_ENROLLMENT_STATUS_LABELS } from './types';
 
-interface StudentOption {
-  id: string;
-  full_name: string;
-}
-
 export function FacialEnrollmentFormPage({
   resourceId,
 }: {
@@ -52,11 +46,6 @@ export function FacialEnrollmentFormPage({
   const router = useRouter();
   const isEdit = Boolean(resourceId);
   const detail = useFacialEnrollment(resourceId ?? '');
-
-  const studentsQuery = useQuery({
-    queryKey: ['students', 'options'],
-    queryFn: () => listResource<StudentOption>('students', { limit: 200 }),
-  });
 
   const form = useForm<FacialEnrollmentFormValues>({
     resolver: zodResolver(facialEnrollmentSchema),
@@ -94,8 +83,6 @@ export function FacialEnrollmentFormPage({
   });
 
   const backHref = isEdit ? `/facial/${resourceId}` : '/facial';
-  const students = studentsQuery.data?.data ?? [];
-
   return (
     <>
       <Topbar
@@ -144,29 +131,14 @@ export function FacialEnrollmentFormPage({
                       <Controller
                         control={control}
                         name="student_id"
-                        render={({ field }) => (
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                            disabled={studentsQuery.isLoading}
-                          >
-                            <SelectTrigger aria-invalid={!!errors.student_id}>
-                              <SelectValue
-                                placeholder={
-                                  studentsQuery.isLoading
-                                    ? 'Carregando…'
-                                    : 'Selecione um aluno…'
-                                }
-                              />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {students.map((s) => (
-                                <SelectItem key={s.id} value={s.id}>
-                                  {s.full_name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                            render={({ field }) => (
+                          <ResourceCombobox<Student>
+                            value={field.value || null}
+                            onChange={(itemId) => field.onChange(itemId ?? '')}
+                            resource="students"
+                            labelFn={(student) => student.full_name}
+                            placeholder="Selecione um aluno…"
+                          />
                         )}
                       />
                     </Field>

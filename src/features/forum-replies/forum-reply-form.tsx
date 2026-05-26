@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
 import { Topbar } from '@/components/dashboard/topbar';
+import { ResourceCombobox } from '@/components/form/resource-combobox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -17,6 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Field } from '@/components/form/field';
 import { applyApiErrors } from '@/lib/form';
 import { toastError, toastSuccess } from '@/lib/toast';
+import type { ForumThread } from '@/features/forum-threads/types';
 import {
   buildCreateForumReplyPayload,
   buildUpdateForumReplyPayload,
@@ -91,7 +93,20 @@ export function ForumReplyFormPage({ replyId }: { replyId?: string }) {
                 <CardHeader><CardTitle className="text-base">Conteúdo</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <Field label="Tópico (UUID)" htmlFor="forum_thread_id" required error={errors.forum_thread_id?.message}>
-                    <Input id="forum_thread_id" disabled={isEdit} {...register('forum_thread_id')} aria-invalid={!!errors.forum_thread_id} />
+                    <Controller
+                      control={control}
+                      name="forum_thread_id"
+                      render={({ field }) => (
+                        <ResourceCombobox<ForumThread>
+                          value={field.value || null}
+                          onChange={(itemId) => field.onChange(itemId ?? '')}
+                          resource="forum-threads"
+                          labelFn={(thread) => thread.title}
+                          placeholder="Selecione um tópico"
+                          disabled={isEdit}
+                        />
+                      )}
+                    />
                   </Field>
                   <Field label="Resposta pai (UUID)" htmlFor="parent_reply_id" error={errors.parent_reply_id?.message}>
                     <Input id="parent_reply_id" disabled={isEdit} {...register('parent_reply_id')} aria-invalid={!!errors.parent_reply_id} />

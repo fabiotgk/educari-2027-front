@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 
 import { Topbar } from '@/components/dashboard/topbar';
+import { ResourceCombobox } from '@/components/form/resource-combobox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -17,6 +18,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Field } from '@/components/form/field';
 import { applyApiErrors } from '@/lib/form';
 import { toastError, toastSuccess } from '@/lib/toast';
+import type { Course } from '@/features/courses/types';
+import type { ForumThread } from '@/features/forum-threads/types';
 import {
   buildForumThreadPayload,
   emptyForumThreadForm,
@@ -86,8 +89,20 @@ export function ForumThreadFormPage({ threadId }: { threadId?: string }) {
                     <Field label="Título" htmlFor="title" required error={errors.title?.message} className="sm:col-span-2">
                       <Input id="title" {...register('title')} aria-invalid={!!errors.title} />
                     </Field>
-                    <Field label="Curso (UUID)" htmlFor="course_id" error={errors.course_id?.message} className="sm:col-span-2">
-                      <Input id="course_id" {...register('course_id')} aria-invalid={!!errors.course_id} />
+                    <Field label="Curso" htmlFor="course_id" error={errors.course_id?.message} className="sm:col-span-2">
+                      <Controller
+                        control={control}
+                        name="course_id"
+                        render={({ field }) => (
+                          <ResourceCombobox<Course>
+                            value={field.value || null}
+                            onChange={(itemId) => field.onChange(itemId ?? '')}
+                            resource="courses"
+                            labelFn={(course) => course.title}
+                            placeholder="Selecione um curso"
+                          />
+                        )}
+                      />
                     </Field>
                     <Field label="Conteúdo" htmlFor="body" required error={errors.body?.message} className="sm:col-span-2">
                       <Textarea id="body" rows={8} {...register('body')} aria-invalid={!!errors.body} />

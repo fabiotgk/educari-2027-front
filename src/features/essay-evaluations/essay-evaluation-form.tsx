@@ -14,6 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Field } from '@/components/form/field';
+import { ResourceCombobox } from '@/components/form/resource-combobox';
 import {
   Select,
   SelectContent,
@@ -21,10 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Field } from '@/components/form/field';
 import { applyApiErrors } from '@/lib/form';
 import { toastError, toastSuccess } from '@/lib/toast';
-import { listResource } from '@/lib/api-client';
 import type { Student } from '@/features/students/types';
 import {
   ESSAY_EVALUATION_STATUS_LABELS,
@@ -56,12 +56,6 @@ export function EssayEvaluationFormPage({ resourceId }: { resourceId?: string })
   const create = useCreateEssayEvaluation();
   const update = useUpdateEssayEvaluation();
   const submitting = create.isPending || update.isPending;
-
-  const studentsQuery = useQuery({
-    queryKey: ['students', 'select'],
-    queryFn: () => listResource<Student>('students', { limit: 1000 }),
-  });
-  const students = studentsQuery.data?.data ?? [];
 
   React.useEffect(() => {
     if (isEdit && detail.data) form.reset(essayEvaluationToForm(detail.data));
@@ -130,19 +124,13 @@ export function EssayEvaluationFormPage({ resourceId }: { resourceId?: string })
                         control={control}
                         name="student_id"
                         render={({ field }) => (
-                          <Select value={field.value} onValueChange={field.onChange}>
-                            <SelectTrigger aria-invalid={!!errors.student_id}>
-                              <SelectValue placeholder="Selecione um aluno…" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="">Nenhum aluno</SelectItem>
-                              {students.map((s) => (
-                                <SelectItem key={s.id} value={s.id}>
-                                  {s.full_name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <ResourceCombobox<Student>
+                            value={field.value || null}
+                            onChange={(itemId) => field.onChange(itemId ?? '')}
+                            resource="students"
+                            labelFn={(student) => student.full_name}
+                            placeholder="Selecione um aluno…"
+                          />
                         )}
                       />
                     </Field>
