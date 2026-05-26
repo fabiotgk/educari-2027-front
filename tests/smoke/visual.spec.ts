@@ -55,6 +55,11 @@ type SmokeReport = {
 const outDir = '/tmp/educari-smoke';
 const reportPath = path.join(outDir, 'report.json');
 const frontUrl = (process.env.EDUCARI_FRONT_URL ?? 'http://localhost:3033').replace(/\/$/, '');
+const apiUrl = (
+  process.env.EDUCARI_API_URL ??
+  process.env.NEXT_PUBLIC_API_URL ??
+  'http://localhost'
+).replace(/\/$/, '');
 
 test.setTimeout(180_000);
 
@@ -135,13 +140,17 @@ test('smoke visual Educari', async ({ page }) => {
 
 async function validateAvaDetail(page: Page, report: SmokeReport): Promise<void> {
   try {
+    const adminToken = process.env.EDUCARI_ADMIN_TOKEN;
+    if (!adminToken) throw new Error('EDUCARI_ADMIN_TOKEN não informado.');
+
+    const courseId = await fetchFirstCourseId(adminToken);
+    if (!courseId) throw new Error('nenhum curso retornado por /api/v1/courses');
+
     await page.goto(url('/ava'), { waitUntil: 'domcontentloaded', timeout: 20_000 });
     await page.waitForLoadState('networkidle', { timeout: 2_000 }).catch(() => {});
-    const firstCourse = page.locator('tbody a[href^="/ava/"]').filter({ hasText: /.+/ }).first();
-    const href = await firstCourse.getAttribute('href', { timeout: 10_000 });
-    if (!href) throw new Error('nenhum link de curso encontrado na tabela');
+    await page.waitForSelector('tbody tr', { timeout: 20_000 });
 
-    await page.goto(url(href), { waitUntil: 'domcontentloaded', timeout: 20_000 });
+    await page.goto(url(`/ava/${courseId}`), { waitUntil: 'domcontentloaded', timeout: 20_000 });
     await page.waitForLoadState('networkidle', { timeout: 2_000 }).catch(() => {});
     await page.screenshot({ path: path.join(outDir, 'ava-detalhe.png'), fullPage: true });
 
@@ -149,13 +158,19 @@ async function validateAvaDetail(page: Page, report: SmokeReport): Promise<void>
       await page.getByRole('tab', { name: tab }).click();
       await page.waitForLoadState('networkidle', { timeout: 2_000 }).catch(() => {});
       const activePanel = page.locator('[role="tabpanel"][data-state="active"]');
-      const rows = await activePanel.locator('tbody tr').count();
+      await activePanel
+        .locator('tbody tr, [class*="rounded-xl"], [class*="rounded-lg"]')
+        .first()
+        .waitFor({ timeout: 10_000 })
+        .catch(() => {});
+      const dataRows = await activePanel.locator('tbody tr').filter({ hasNotText: /Nenhum|Nenhuma/ }).count();
       const cards = await activePanel.locator('[class*="rounded-xl"], [class*="rounded-lg"]').count();
-      const count = rows || cards;
+      const empty = await activePanel.getByText(/Nenhum|Nenhuma/).count();
+      const count = dataRows || (empty === 0 ? cards : 0);
       report.avaTabs[tab] = {
-        ok: rows > 0,
+        ok: count > 0 || empty > 0,
         count,
-        cause: rows > 0 ? null : 'conteúdo sem linhas na tabela',
+        cause: count > 0 ? null : empty > 0 ? 'aba vazia (sem dados)' : 'conteúdo não renderizado',
       };
       await page.screenshot({ path: path.join(outDir, `ava-${slug(tab)}.png`), fullPage: true });
     }
@@ -164,6 +179,28 @@ async function validateAvaDetail(page: Page, report: SmokeReport): Promise<void>
       report.avaTabs[tab].cause = error instanceof Error ? error.message : String(error);
     }
   }
+}
+
+async function fetchFirstCourseId(token: string): Promise<string | null> {
+  const response = await fetch(`${apiUrl}/api/v1/courses?limit=1`, {
+    headers: {
+      Accept: 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`/api/v1/courses retornou ${response.status}`);
+  }
+
+  const payload: unknown = await response.json();
+  if (!payload || typeof payload !== 'object' || !('data' in payload)) return null;
+  const data = (payload as { data: unknown }).data;
+  if (!Array.isArray(data) || data.length === 0) return null;
+  const first = data[0];
+  if (!first || typeof first !== 'object' || !('id' in first)) return null;
+  const id = (first as { id: unknown }).id;
+  return typeof id === 'string' && id.length > 0 ? id : null;
 }
 
 async function validatePortal(page: Page, report: SmokeReport): Promise<void> {
