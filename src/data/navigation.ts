@@ -110,7 +110,18 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     label: 'EAD & Expansão',
     items: [
-      { label: 'AVA / LMS', icon: 'Monitor', moduleKey: 'M31_lms_ava', href: '/ava' },
+      {
+        label: 'AVA / LMS',
+        icon: 'Monitor',
+        moduleKey: 'M31_lms_ava',
+        href: '/ava',
+        children: [
+          { label: 'Cursos', href: '/ava' },
+          { label: 'Módulos', href: '/ava/modulos' },
+          { label: 'Aulas', href: '/ava/aulas' },
+          { label: 'Avisos', href: '/ava/avisos' },
+        ],
+      },
       { label: 'Polos EAD', icon: 'MapPin', moduleKey: 'M35_distance_centers', href: '/polos' },
       { label: 'PNAE Estadual', icon: 'UtensilsCrossed', moduleKey: 'M36_pnae_state', href: '/pnae-estadual' },
       { label: 'Cursos Livres', icon: 'Award', moduleKey: 'M38_open_courses', href: '/cursos-livres' },
