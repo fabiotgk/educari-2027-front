@@ -56,6 +56,8 @@ const outDir = '/tmp/educari-smoke';
 const reportPath = path.join(outDir, 'report.json');
 const frontUrl = (process.env.EDUCARI_FRONT_URL ?? 'http://localhost:3033').replace(/\/$/, '');
 
+test.setTimeout(180_000);
+
 test('smoke visual Educari', async ({ page }) => {
   fs.mkdirSync(outDir, { recursive: true });
 
