@@ -65,7 +65,16 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       { label: 'Diário Móvel', icon: 'Smartphone', moduleKey: 'M05_class_diary_mobile', href: '/diario-mobile' },
       { label: 'Frequência', icon: 'CalendarCheck', moduleKey: 'M06_attendance', href: '/frequencia' },
-      { label: 'Notas e Boletim', icon: 'GraduationCap', moduleKey: 'M07_grades', href: '/notas' },
+      {
+        label: 'Notas e Boletim',
+        icon: 'GraduationCap',
+        moduleKey: 'M07_grades',
+        href: '/notas',
+        children: [
+          { label: 'Notas', href: '/notas' },
+          { label: 'Lançamento em grade', href: '/notas/lancamento' },
+        ],
+      },
       { label: 'Documentação', icon: 'FileText', moduleKey: 'M08_school_documents', href: '/documentos' },
       { label: 'Calendário', icon: 'Calendar', moduleKey: 'M09_school_calendar', href: '/calendario' },
     ],
